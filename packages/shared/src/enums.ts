@@ -43,6 +43,9 @@ export const escrowStatus = z.enum(["funded", "released", "refunded"]);
 /** AI hint persona a student can ask (conflict C5: named persona instances). */
 export const hintPersona = z.enum(["pm", "coach"]);
 
+/** AI reviewer verdict — the final advisory line of a code review. */
+export const reviewVerdict = z.enum(["APPROVE", "REQUEST_CHANGES"]);
+
 /**
  * Demo user role (// MOCK auth).
  *
@@ -69,5 +72,6 @@ export type AttemptStatus = z.infer<typeof attemptStatus>;
 export type JobStatus = z.infer<typeof jobStatus>;
 export type EscrowStatus = z.infer<typeof escrowStatus>;
 export type HintPersona = z.infer<typeof hintPersona>;
+export type ReviewVerdict = z.infer<typeof reviewVerdict>;
 export type UserRole = z.infer<typeof userRole>;
 export type ErrorCode = z.infer<typeof errorCode>;

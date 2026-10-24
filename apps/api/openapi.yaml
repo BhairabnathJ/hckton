@@ -12,6 +12,7 @@ tags:
   - name: users
   - name: tickets
   - name: attempts
+  - name: workspace
   - name: ai
   - name: jobs
   - name: admin
@@ -204,6 +205,203 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "404":
           description: Attempt not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/workspace:
+    post:
+      tags:
+        - workspace
+      summary: "Create the in-browser workspace (git clone of the ticket branch) if missing"
+      description: "Owner-scoped. Clones the ticket's branch from the local
+        brightline repo into a per-attempt temp dir (idempotent). Returns the
+        file tree excluding .git/.venv/__pycache__."
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: The workspace file tree
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceTree"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/workspace/files:
+    get:
+      tags:
+        - workspace
+      summary: The workspace file tree
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: The workspace file tree
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceTree"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt or workspace not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/workspace/file:
+    get:
+      tags:
+        - workspace
+      summary: Read a single workspace file
+      parameters:
+        - *a3
+        - *a1
+        - name: path
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The file path and content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileContent"
+        "400":
+          description: Path escapes the workspace, too large, or not text (validation_error)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt, workspace, or file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+    put:
+      tags:
+        - workspace
+      summary: Write a single workspace file
+      parameters:
+        - *a3
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WriteFileRequest"
+      responses:
+        "200":
+          description: Write succeeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WriteFileResponse"
+        "400":
+          description: Path escapes the workspace, too large, or not text (validation_error)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt or workspace not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/workspace/run-tests:
+    post:
+      tags:
+        - workspace
+      summary: "Run ONLY the visible tests in the workspace (60s timeout)"
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: Visible-test counts and bounded output
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunTestsResponse"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt or workspace not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/workspace/submit:
+    post:
+      tags:
+        - workspace
+      summary: "Submit the workspace for grading (202; grades with hidden tests)"
+      description: "Returns 202 and grades the workspace: hidden tests are copied
+        into a separate temp copy (never into the workspace), run, reviewed, and
+        the attempt resolves to passed/changes_requested with the same XP rules
+        as the PR path."
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "202":
+          description: The resolved attempt (passed or changes_requested)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+        "403":
+          description: Caller is not the attempt owner (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt or workspace not found
           content:
             application/json:
               schema:
@@ -692,6 +890,33 @@ components:
           type: integer
           minimum: 0
           maximum: 9007199254740991
+        testsPassed:
+          nullable: true
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        testsFailed:
+          nullable: true
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestFailure"
+        verdict:
+          nullable: true
+          type: string
+          enum:
+            - APPROVE
+            - REQUEST_CHANGES
+        reviewBody:
+          nullable: true
+          type: string
+        reviewCommentUrl:
+          nullable: true
+          type: string
+          format: uri
       required:
         - id
         - userId
@@ -701,6 +926,91 @@ components:
         - testRuns
         - reviewRounds
         - hintsUsed
+      additionalProperties: false
+    TestFailure:
+      type: object
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+      required:
+        - name
+        - message
+      additionalProperties: false
+    WorkspaceNode:
+      type: object
+      properties:
+        path:
+          type: string
+        type:
+          type: string
+          enum:
+            - file
+            - dir
+      required:
+        - path
+        - type
+      additionalProperties: false
+    WorkspaceTree:
+      type: object
+      properties:
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceNode"
+      required:
+        - files
+      additionalProperties: false
+    FileContent:
+      type: object
+      properties:
+        path:
+          type: string
+        content:
+          type: string
+      required:
+        - path
+        - content
+      additionalProperties: false
+    WriteFileRequest:
+      type: object
+      properties:
+        path:
+          type: string
+        content:
+          type: string
+      required:
+        - path
+        - content
+      additionalProperties: false
+    WriteFileResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          enum:
+            - true
+      required:
+        - ok
+      additionalProperties: false
+    RunTestsResponse:
+      type: object
+      properties:
+        passed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        failed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        output:
+          type: string
+      required:
+        - passed
+        - failed
+        - output
       additionalProperties: false
     HintLog:
       type: object

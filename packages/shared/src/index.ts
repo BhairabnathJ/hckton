@@ -26,6 +26,7 @@ export * as attemptsEndpoints from "./endpoints/attempts.js";
 export * as aiEndpoints from "./endpoints/ai.js";
 export * as jobsEndpoints from "./endpoints/jobs.js";
 export * as adminEndpoints from "./endpoints/admin.js";
+export * as workspaceEndpoints from "./endpoints/workspace.js";
 
 // SSE events
 export * from "./events.js";
