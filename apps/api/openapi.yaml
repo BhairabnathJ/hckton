@@ -1,0 +1,1054 @@
+openapi: 3.0.3
+info:
+  title: SideQuest API
+  version: 0.0.0
+  description: "The SideQuest API contract (build-plan spec #1, api-contract).
+    Component schemas are generated from the @sidequest/shared zod schemas.
+    MOCKS: X-Demo-User auth and Job.escrowStatus/payout (architecture §7)."
+servers:
+  - url: http://localhost:4000
+    description: Local mock server
+tags:
+  - name: users
+  - name: tickets
+  - name: attempts
+  - name: ai
+  - name: jobs
+  - name: admin
+  - name: events
+paths:
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Get the current user
+      parameters:
+        - &a1
+          name: X-Demo-User
+          in: header
+          required: false
+          description: "MOCK: resolves the current user. Production replaces this seam
+            with real auth middleware (session/JWT/OAuth) per architecture §7."
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: No resolvable current user (unauthorized)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: &a2
+        - DemoUser: []
+    patch:
+      tags:
+        - users
+      summary: Update the current user's telemetry opt-in
+      parameters:
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOptInRequest"
+      responses:
+        "200":
+          description: The updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /users/{id}:
+    get:
+      tags:
+        - users
+      summary: Get a user's public profile
+      parameters:
+        - &a3
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The user's public profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: []
+  /tickets:
+    get:
+      tags:
+        - tickets
+      summary: List tickets filtered to the current user's level
+      parameters:
+        - *a1
+      responses:
+        "200":
+          description: Tickets at or below the user's level
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+      security: *a2
+  /tickets/{id}:
+    get:
+      tags:
+        - tickets
+      summary: Get a single ticket (public view, no hidden-test reference)
+      parameters:
+        - *a3
+      responses:
+        "200":
+          description: The ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: []
+  /attempts:
+    post:
+      tags:
+        - attempts
+      summary: Start an attempt on a ticket
+      parameters:
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartAttemptRequest"
+      responses:
+        "201":
+          description: The new attempt (status in_progress)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Ticket not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}/submit:
+    post:
+      tags:
+        - attempts
+      summary: Submit a PR for an attempt
+      parameters:
+        - *a3
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitAttemptRequest"
+      responses:
+        "200":
+          description: The updated attempt (status grading)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+        "400":
+          description: Validation error (missing/invalid prUrl)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Attempt not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /attempts/{id}:
+    get:
+      tags:
+        - attempts
+      summary: Get an attempt and its status
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: The attempt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attempt"
+        "404":
+          description: Attempt not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /ai/pm:
+    post:
+      tags:
+        - ai
+      summary: Ask the PM persona
+      parameters:
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskPersonaRequest"
+      responses:
+        "200":
+          description: The PM persona's response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AskPersonaResponse"
+        "400":
+          description: Validation error (empty question)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /ai/coach:
+    post:
+      tags:
+        - ai
+      summary: Ask the coach persona
+      parameters:
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskPersonaRequest"
+      responses:
+        "200":
+          description: The coach persona's response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AskPersonaResponse"
+        "400":
+          description: Validation error (empty question)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /jobs:
+    get:
+      tags:
+        - jobs
+      summary: List marketplace jobs
+      responses:
+        "200":
+          description: All jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+      security: []
+    post:
+      tags:
+        - jobs
+      summary: Post a job
+      parameters:
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostJobRequest"
+      responses:
+        "201":
+          description: The created job (status open)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /jobs/{id}/claim:
+    post:
+      tags:
+        - jobs
+      summary: Claim a job (first-come-first-serve, Level 6 gated)
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: The claimed job
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "403":
+          description: Below the Level 6 gate (level_gate)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: Job already claimed (job_already_claimed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /jobs/{id}/submit:
+    post:
+      tags:
+        - jobs
+      summary: Submit a PR for a claimed job
+      parameters:
+        - *a3
+        - *a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitJobRequest"
+      responses:
+        "200":
+          description: The updated job (status submitted)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: Job not in a submittable state (conflict)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /jobs/{id}/accept:
+    post:
+      tags:
+        - jobs
+      summary: Accept a submission (MOCK escrow release + payout)
+      parameters:
+        - *a3
+        - *a1
+      responses:
+        "200":
+          description: The accepted job (status paid, escrow released)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "409":
+          description: Job not in an acceptable state (conflict)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
+  /admin/jobs/drop:
+    post:
+      tags:
+        - admin
+      summary: "DEMO ONLY: drop a demo job and emit job.dropped on /events"
+      responses:
+        "201":
+          description: The dropped job (status open)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+      security: []
+  /events:
+    get:
+      tags:
+        - events
+      summary: Server-Sent Events stream of marketplace events
+      description: text/event-stream emitting named events `job.dropped`,
+        `job.claimed`, and `job.claim_expired`. Each event's `data` is the
+        corresponding payload schema.
+      parameters:
+        - *a1
+      responses:
+        "200":
+          description: An SSE stream (text/event-stream)
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/JobDroppedPayload"
+                  - $ref: "#/components/schemas/JobClaimedPayload"
+                  - $ref: "#/components/schemas/JobClaimExpiredPayload"
+      security: *a2
+components:
+  schemas:
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum:
+                - validation_error
+                - not_found
+                - level_gate
+                - job_already_claimed
+                - unauthorized
+                - conflict
+                - internal
+            message:
+              type: string
+          required:
+            - code
+            - message
+          additionalProperties: false
+      required:
+        - error
+      additionalProperties: false
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        handle:
+          type: string
+        name:
+          type: string
+        school:
+          type: string
+        xp:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        level:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        workAuthorized:
+          type: boolean
+        telemetryOptIn:
+          type: boolean
+      required:
+        - id
+        - handle
+        - name
+        - school
+        - xp
+        - level
+        - rating
+        - workAuthorized
+        - telemetryOptIn
+      additionalProperties: false
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        size:
+          type: string
+      required:
+        - id
+        - name
+        - size
+      additionalProperties: false
+    SimCompany:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        repoTemplateUrl:
+          type: string
+          format: uri
+      required:
+        - id
+        - name
+        - repoTemplateUrl
+      additionalProperties: false
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+        simCompanyId:
+          type: string
+        level:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 9007199254740991
+        title:
+          type: string
+        description:
+          type: string
+        acceptanceCriteria:
+          minItems: 1
+          type: array
+          items:
+            type: string
+        branch:
+          type: string
+      required:
+        - id
+        - simCompanyId
+        - level
+        - title
+        - description
+        - acceptanceCriteria
+        - branch
+      additionalProperties: false
+    Attempt:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        ticketId:
+          type: string
+        status:
+          type: string
+          enum:
+            - in_progress
+            - grading
+            - passed
+            - changes_requested
+            - abandoned
+        prUrl:
+          nullable: true
+          type: string
+          format: uri
+        testRuns:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        reviewRounds:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        hintsUsed:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - id
+        - userId
+        - ticketId
+        - status
+        - prUrl
+        - testRuns
+        - reviewRounds
+        - hintsUsed
+      additionalProperties: false
+    HintLog:
+      type: object
+      properties:
+        id:
+          type: string
+        attemptId:
+          type: string
+        persona:
+          type: string
+          enum:
+            - pm
+            - coach
+        question:
+          type: string
+        response:
+          type: string
+      required:
+        - id
+        - attemptId
+        - persona
+        - question
+        - response
+      additionalProperties: false
+    TelemetryEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        type:
+          type: string
+        payload:
+          type: object
+          additionalProperties: {}
+        createdAt:
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+      required:
+        - id
+        - userId
+        - type
+        - payload
+        - createdAt
+      additionalProperties: false
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        payCents:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        timeLimitHours:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 9007199254740991
+        minLevel:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        status:
+          type: string
+          enum:
+            - open
+            - claimed
+            - submitted
+            - accepted
+            - paid
+            - expired
+        claimedByUserId:
+          nullable: true
+          type: string
+        claimExpiresAt:
+          nullable: true
+          type: string
+          format: date-time
+          pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+        escrowStatus:
+          type: string
+          enum:
+            - funded
+            - released
+            - refunded
+      required:
+        - id
+        - companyId
+        - title
+        - description
+        - payCents
+        - timeLimitHours
+        - minLevel
+        - status
+        - claimedByUserId
+        - claimExpiresAt
+        - escrowStatus
+      additionalProperties: false
+    UpdateOptInRequest:
+      type: object
+      properties:
+        telemetryOptIn:
+          type: boolean
+      required:
+        - telemetryOptIn
+      additionalProperties: false
+    StartAttemptRequest:
+      type: object
+      properties:
+        ticketId:
+          type: string
+      required:
+        - ticketId
+      additionalProperties: false
+    SubmitAttemptRequest:
+      type: object
+      properties:
+        prUrl:
+          type: string
+          format: uri
+      required:
+        - prUrl
+      additionalProperties: false
+    AskPersonaRequest:
+      type: object
+      properties:
+        question:
+          type: string
+          minLength: 1
+        attemptId:
+          type: string
+      required:
+        - question
+      additionalProperties: false
+    AskPersonaResponse:
+      type: object
+      properties:
+        persona:
+          type: string
+          enum:
+            - pm
+            - coach
+        question:
+          type: string
+        response:
+          type: string
+      required:
+        - persona
+        - question
+        - response
+      additionalProperties: false
+    PostJobRequest:
+      type: object
+      properties:
+        companyId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        payCents:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        timeLimitHours:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 9007199254740991
+        minLevel:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - companyId
+        - title
+        - description
+        - payCents
+        - timeLimitHours
+        - minLevel
+      additionalProperties: false
+    SubmitJobRequest:
+      type: object
+      properties:
+        prUrl:
+          type: string
+          format: uri
+      required:
+        - prUrl
+      additionalProperties: false
+    JobDroppedPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - job.dropped
+        job:
+          type: object
+          properties:
+            id:
+              type: string
+            companyId:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            payCents:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            timeLimitHours:
+              type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              maximum: 9007199254740991
+            minLevel:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            status:
+              type: string
+              enum:
+                - open
+                - claimed
+                - submitted
+                - accepted
+                - paid
+                - expired
+            claimedByUserId:
+              nullable: true
+              type: string
+            claimExpiresAt:
+              nullable: true
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            escrowStatus:
+              type: string
+              enum:
+                - funded
+                - released
+                - refunded
+          required:
+            - id
+            - companyId
+            - title
+            - description
+            - payCents
+            - timeLimitHours
+            - minLevel
+            - status
+            - claimedByUserId
+            - claimExpiresAt
+            - escrowStatus
+          additionalProperties: false
+      required:
+        - type
+        - job
+      additionalProperties: false
+    JobClaimedPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - job.claimed
+        job:
+          type: object
+          properties:
+            id:
+              type: string
+            companyId:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            payCents:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            timeLimitHours:
+              type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              maximum: 9007199254740991
+            minLevel:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            status:
+              type: string
+              enum:
+                - open
+                - claimed
+                - submitted
+                - accepted
+                - paid
+                - expired
+            claimedByUserId:
+              nullable: true
+              type: string
+            claimExpiresAt:
+              nullable: true
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            escrowStatus:
+              type: string
+              enum:
+                - funded
+                - released
+                - refunded
+          required:
+            - id
+            - companyId
+            - title
+            - description
+            - payCents
+            - timeLimitHours
+            - minLevel
+            - status
+            - claimedByUserId
+            - claimExpiresAt
+            - escrowStatus
+          additionalProperties: false
+        claimedByUserId:
+          type: string
+      required:
+        - type
+        - job
+        - claimedByUserId
+      additionalProperties: false
+    JobClaimExpiredPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - job.claim_expired
+        job:
+          type: object
+          properties:
+            id:
+              type: string
+            companyId:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+            payCents:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            timeLimitHours:
+              type: integer
+              minimum: 0
+              exclusiveMinimum: true
+              maximum: 9007199254740991
+            minLevel:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            status:
+              type: string
+              enum:
+                - open
+                - claimed
+                - submitted
+                - accepted
+                - paid
+                - expired
+            claimedByUserId:
+              nullable: true
+              type: string
+            claimExpiresAt:
+              nullable: true
+              type: string
+              format: date-time
+              pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
+            escrowStatus:
+              type: string
+              enum:
+                - funded
+                - released
+                - refunded
+          required:
+            - id
+            - companyId
+            - title
+            - description
+            - payCents
+            - timeLimitHours
+            - minLevel
+            - status
+            - claimedByUserId
+            - claimExpiresAt
+            - escrowStatus
+          additionalProperties: false
+      required:
+        - type
+        - job
+      additionalProperties: false
+  securitySchemes:
+    DemoUser:
+      type: apiKey
+      in: header
+      name: X-Demo-User
+      description: MOCK auth seam (architecture §7). Production replaces this with
+        real session/JWT/OAuth auth.
