@@ -12,6 +12,7 @@
     "mock": "tsx src/mock/server.ts",
     "check": "tsx src/mock/check.ts",
     "smoke": "bash scripts/smoke.sh",
+    "smoke:demo": "bash scripts/smoke-demo.sh",
     "mock:smoke": "tsx src/mock/smoke.ts",
     "llm:test": "tsx src/llm/test.ts",
     "dev": "tsx src/server.ts",
