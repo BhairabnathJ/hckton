@@ -1,0 +1,110 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Create the artifact file and authoritative-reference framing": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708487
+      }
+    ],
+    "2. Author Section 1 — System overview + component diagram": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708489
+      }
+    ],
+    "3. Author Section 2 — Module boundaries and responsibilities": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708490
+      }
+    ],
+    "4. Author Section 3 — Data model (ER diagram)": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708492
+      }
+    ],
+    "5.1 Add sequence diagram (a): start ticket → PR → grade → review → XP": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708493
+      }
+    ],
+    "5.2 Add sequence diagram (b): job drop → claim → submit → accept → mock escrow release": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708494
+      }
+    ],
+    "5.3 Add sequence diagram (c): bug-injection hook → new ticket": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708495
+      }
+    ],
+    "6.1 Add the Attempt state machine": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708496
+      }
+    ],
+    "6.2 Add the Job state machine": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708497
+      }
+    ],
+    "7. Author Section 6 — Security model": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708498
+      }
+    ],
+    "8. Author Section 7 — Mock inventory and production replacements": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708499
+      }
+    ],
+    "9. Author Section 8 — Build plan in dependency order": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708501
+      }
+    ],
+    "10. Author Section 9 — Known risks and fallbacks": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708504
+      }
+    ],
+    "11. Checkpoint — review section structure and ordering": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708506
+      }
+    ],
+    "12. Author a script-based smoke test and run final verification": [
+      {
+        "executionId": "56ca324d-3a4d-4876-a3db-a0accda373c5",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792860708508
+      }
+    ]
+  }
+}
