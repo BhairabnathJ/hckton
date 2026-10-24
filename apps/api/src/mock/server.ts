@@ -16,12 +16,14 @@ import express, {
   type Response,
 } from "express";
 import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
-import type { ZodType } from "zod";
+import { resolve, dirname } from "node:path";
+import { readFileSync } from "node:fs";
+import { z, type ZodType } from "zod";
 import {
   // entities / helpers
   makeError,
   type Job,
+  type Ticket,
   // endpoint schemas
   usersEndpoints,
   ticketsEndpoints,
@@ -34,8 +36,63 @@ import {
 } from "@sidequest/shared";
 import { buildSeed, type SeedData } from "./seed.js";
 import { resolveDemoUser } from "./demoUser.js";
+import { createLLMProvider } from "../llm/index.js";
 
 const LEVEL_GATE = 6;
+
+// ---------------------------------------------------------------------------
+// Admin tickets reload — server-only ticket-definition parsing (// MOCK)
+// ---------------------------------------------------------------------------
+// The brightline SimCompany every reloaded ticket is mapped to. In a real
+// core-api this is resolved from the ticket's `repo`; the mock pins it.
+const BRIGHTLINE_SIMCOMPANY_ID = "simco_brightline";
+
+// Path to the server-only ticket definitions. These live in the hidden repo
+// and are NEVER shipped to a client; only mapped, hidden-field-stripped views
+// are ever serialized.
+const HIDDEN_TICKETS_PATH = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../../sim-companies/brightline-hidden/tickets.json",
+);
+
+/**
+ * Server-only schema for a raw ticket definition in
+ * `sim-companies/brightline-hidden/tickets.json`.
+ *
+ * SECURITY (architecture §6): this shape carries `hiddenTestPath`, a
+ * server-only reference. It is deliberately defined HERE (inside the API
+ * process), not in `@sidequest/shared`, so hidden-test material can never enter
+ * the client contract. The mapper below drops `hiddenTestPath` before producing
+ * the client-facing `Ticket`.
+ */
+const rawTicketDefinition = z.object({
+  id: z.string(),
+  repo: z.string(),
+  title: z.string(),
+  description: z.string(),
+  difficulty: z.string(),
+  xpReward: z.number().int().nonnegative(),
+  level: z.number().int().positive(),
+  acceptanceCriteria: z.array(z.string()).min(1),
+  branch: z.string(),
+  hiddenTestPath: z.string(), // SERVER-ONLY: never serialized to a client
+});
+
+/** Map a raw (server-only) ticket definition to the client-facing Ticket. */
+// MOCK: in core-api this mapping + upsert happens against Prisma; here it maps
+// to the pinned brightline SimCompany and drops the hidden-test path.
+function toClientTicket(raw: z.infer<typeof rawTicketDefinition>): Ticket {
+  // `hiddenTestPath` is intentionally not read into the result.
+  return {
+    id: raw.id,
+    simCompanyId: BRIGHTLINE_SIMCOMPANY_ID,
+    level: raw.level,
+    title: raw.title,
+    description: raw.description,
+    acceptanceCriteria: raw.acceptanceCriteria,
+    branch: raw.branch,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // SSE hub — transport only (architecture §2 events module)
@@ -89,6 +146,9 @@ export function createServer(seed: SeedData = buildSeed()): {
 
   // Mutable in-memory copies so claim/submit/accept are observable in a session.
   const jobs = new Map<string, Job>(seed.jobs.map((j) => [j.id, j]));
+  // Mutable in-memory ticket store so POST /admin/tickets/reload is observable
+  // in a session without a restart. // MOCK: stands in for the core-api DB.
+  const tickets = new Map<string, Ticket>(seed.tickets.map((t) => [t.id, t]));
 
   // ----- users ------------------------------------------------------------
   app.get("/users/me", (req, res) => {
@@ -126,12 +186,12 @@ export function createServer(seed: SeedData = buildSeed()): {
     const me = resolveDemoUser(req, seed);
     const level = me?.level ?? 0;
     // Filter to tickets at or below the current user's level (Requirement 7.5).
-    const atOrBelow = seed.tickets.filter((t) => t.level <= level);
+    const atOrBelow = [...tickets.values()].filter((t) => t.level <= level);
     send(res, 200, ticketsEndpoints.listTicketsResponse, atOrBelow);
   });
 
   app.get("/tickets/:id", (req, res) => {
-    const t = seed.tickets.find((x) => x.id === req.params.id);
+    const t = tickets.get(req.params.id);
     if (!t) {
       res.status(404).json(makeError("not_found", `Ticket ${req.params.id} not found`));
       return;
@@ -191,21 +251,44 @@ export function createServer(seed: SeedData = buildSeed()): {
   });
 
   // ----- ai personas ------------------------------------------------------
-  const persona = (name: "pm" | "coach") => (req: Request, res: Response) => {
+  // The /ai/* endpoints use the LLMProvider seam. For the offline mock server
+  // we default to the MockProvider unless LLM_PROVIDER selects a real backend,
+  // so `npm run mock` never needs credentials. Provider construction is lazy so
+  // a misconfigured real provider doesn't crash startup.
+  let aiProvider: import("../llm/types.js").LLMProvider | undefined;
+  const getAiProvider = (): import("../llm/types.js").LLMProvider => {
+    if (!aiProvider) {
+      aiProvider = createLLMProvider(process.env.LLM_PROVIDER ?? "mock");
+    }
+    return aiProvider;
+  };
+
+  const persona = (name: "pm" | "coach") => async (req: Request, res: Response) => {
     const body = parseBody(req, res, aiEndpoints.askPersonaRequest);
     if (!body) return;
-    const canned =
-      name === "pm"
-        ? "As the PM: focus on the user-facing acceptance criteria first — what does 'done' look like for the shipper?"
-        : "As your coach: reproduce the failure with a test before you touch the fix, then make the smallest change that turns it green.";
-    send(res, 200, aiEndpoints.askPersonaResponse, {
-      persona: name,
-      question: body.question,
-      response: canned,
-    });
+    try {
+      const result = await getAiProvider().review({
+        persona: name,
+        ticketId: body.attemptId ? attemptTicketId(body.attemptId) : "",
+        prompt: body.question,
+      });
+      send(res, 200, aiEndpoints.askPersonaResponse, {
+        persona: name,
+        question: body.question,
+        response: result.text,
+      });
+    } catch (err) {
+      // Never leak credentials; return a generic internal error envelope.
+      res.status(500).json(makeError("internal", `AI provider error: ${(err as Error).message}`));
+    }
   };
   app.post("/ai/pm", persona("pm"));
   app.post("/ai/coach", persona("coach"));
+
+  /** Map a seeded attemptId to its ticketId so MockProvider can pick a canned review. */
+  function attemptTicketId(attemptId: string): string {
+    return seed.attempts.find((a) => a.id === attemptId)?.ticketId ?? "";
+  }
 
   // ----- jobs (marketplace) ----------------------------------------------
   app.get("/jobs", (_req, res) => {
@@ -303,6 +386,49 @@ export function createServer(seed: SeedData = buildSeed()): {
     jobs.set(job.id, job);
     hub.publish({ type: "job.dropped", job });
     send(res, 201, adminEndpoints.dropDemoJobResponse, job);
+  });
+
+  // POST /admin/tickets/reload — admin-only; re-read the server-only ticket
+  // definitions and upsert any new tickets into the in-memory store without a
+  // restart. Returns { added, total }.
+  // MOCK: gated on the `X-Demo-User: admin` auth seam and backed by the
+  // in-memory ticket store. In core-api this re-reads the file and performs a
+  // real prisma.ticket.upsert; the response shape is identical.
+  app.post("/admin/tickets/reload", (req, res) => {
+    // MOCK: admin resolution via the X-Demo-User header. Only `admin` passes.
+    const demoUser = req.header("X-Demo-User")?.trim();
+    if (!demoUser) {
+      res.status(401).json(makeError("unauthorized", "No resolvable current user"));
+      return;
+    }
+    if (demoUser !== "admin") {
+      res.status(403).json(makeError("level_gate", "Admin-only endpoint (X-Demo-User: admin required)"));
+      return;
+    }
+
+    let defs: z.infer<typeof rawTicketDefinition>[];
+    try {
+      const parsed: unknown = JSON.parse(readFileSync(HIDDEN_TICKETS_PATH, "utf8"));
+      defs = z.array(rawTicketDefinition).parse(parsed);
+    } catch (err) {
+      res
+        .status(500)
+        .json(makeError("internal", `Failed to read ticket definitions: ${(err as Error).message}`));
+      return;
+    }
+
+    let added = 0;
+    for (const def of defs) {
+      const isNew = !tickets.has(def.id);
+      // Upsert: new ids count as added; existing ids are refreshed in place.
+      tickets.set(def.id, toClientTicket(def));
+      if (isNew) added++;
+    }
+
+    send(res, 200, adminEndpoints.reloadTicketsResponse, {
+      added,
+      total: tickets.size,
+    });
   });
 
   // ----- SSE stream -------------------------------------------------------

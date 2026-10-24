@@ -441,6 +441,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/Job"
       security: []
+  /admin/tickets/reload:
+    post:
+      tags:
+        - admin
+      summary: "ADMIN ONLY: re-read the ticket definitions and upsert new tickets"
+      description: "Re-reads /sim-companies/brightline-hidden/tickets.json and
+        upserts any new tickets into the store without a restart. Admin-only:
+        resolved via the MOCK X-Demo-User auth seam, which must be `admin`
+        (architecture §7). The response carries only counts and never exposes
+        ticket bodies or any hidden-test reference (architecture §6)."
+      parameters:
+        - *a1
+      responses:
+        "200":
+          description: Counts of tickets added on this call and total after reload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReloadTicketsResponse"
+        "401":
+          description: No resolvable current user (unauthorized)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Caller is not the admin demo user (level_gate)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
   /events:
     get:
       tags:
@@ -828,6 +860,21 @@ components:
           format: uri
       required:
         - prUrl
+      additionalProperties: false
+    ReloadTicketsResponse:
+      type: object
+      properties:
+        added:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        total:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+        - added
+        - total
       additionalProperties: false
     JobDroppedPayload:
       type: object

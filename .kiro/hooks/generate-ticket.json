@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Generate Brightline ticket from request",
+      "trigger": "PostFileSave",
+      "matcher": "ticket-request\\.md$",
+      "action": {
+        "type": "agent",
+        "prompt": "A new ticket request was saved in ticket-request.md. Follow /docs/architecture.md and the sandbox-brightline spec. 1) Read the bug description and level from ticket-request.md. 2) In /sim-companies/brightline, create a new branch named ticket/<level>-<short-slug> from main and inject that bug with a minimal diff. 3) Write hidden pytest tests in /sim-companies/brightline-hidden/tests/<ticket-id>/ and a reference solution in /sim-companies/brightline-hidden/solutions/<ticket-id>/. 4) Add the ticket to tickets.json following the frozen schema. 5) Run python3.12 sim-companies/brightline-hidden/scripts/verify_tickets.py; all tickets must be sound. If the new ticket fails verification, fix it and re-run. 6) Write a short summary to ticket-log.md. Do NOT edit ticket-request.md again. 7) Call POST http://localhost:4000/admin/tickets/reload so the API picks up the new ticket."
+      }
+    }
+  ]
+}
