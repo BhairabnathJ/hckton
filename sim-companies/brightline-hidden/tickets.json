@@ -1,0 +1,47 @@
+[
+  {
+    "id": "brightline-l1-pagination",
+    "repo": "brightline",
+    "title": "Off-by-one in GET /shipments pagination",
+    "description": "Paginated shipment listing drops or duplicates a row at page boundaries.",
+    "difficulty": "easy",
+    "xpReward": 100,
+    "level": 1,
+    "acceptanceCriteria": [
+      "Page boundaries include every shipment exactly once across pages",
+      "No shipment is skipped or duplicated between consecutive pages"
+    ],
+    "branch": "ticket/l1-pagination",
+    "hiddenTestPath": "tests/brightline-l1-pagination/test_pagination.py"
+  },
+  {
+    "id": "brightline-l2-eta-timezone",
+    "repo": "brightline",
+    "title": "Route ETA wrong by whole hours for non-UTC drivers",
+    "description": "ETA for a route is off by an integer number of hours when the driver is in a non-UTC timezone.",
+    "difficulty": "medium",
+    "xpReward": 200,
+    "level": 2,
+    "acceptanceCriteria": [
+      "Route ETA is correct for drivers in any timezone",
+      "ETA for UTC and non-UTC drivers differ only by the true offset, not by a dropped conversion"
+    ],
+    "branch": "ticket/l2-eta-timezone",
+    "hiddenTestPath": "tests/brightline-l2-eta-timezone/test_eta_timezone.py"
+  },
+  {
+    "id": "brightline-l3-route-eta",
+    "repo": "brightline",
+    "title": "Add GET /routes/{id}/eta",
+    "description": "New endpoint returning ETA computed from route distance and average speed.",
+    "difficulty": "hard",
+    "xpReward": 300,
+    "level": 3,
+    "acceptanceCriteria": [
+      "GET /routes/{id}/eta returns an ETA computed from distance and average speed",
+      "Unknown route id yields a not-found error"
+    ],
+    "branch": "ticket/l3-route-eta",
+    "hiddenTestPath": "tests/brightline-l3-route-eta/test_route_eta.py"
+  }
+]
