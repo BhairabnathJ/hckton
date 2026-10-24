@@ -5,7 +5,7 @@
  * switcher. Non-2xx responses are decoded from the canonical
  * `{ error: { code, message } }` envelope into an ApiError.
  */
-import type { ZodType } from "zod";
+import { z, type ZodType } from "zod";
 import {
   errorEnvelope,
   user,
@@ -20,7 +20,6 @@ import {
   type ErrorCode,
   type User,
   type Ticket,
-  type Attempt,
   type Job,
 } from "@sidequest/shared";
 
@@ -52,7 +51,22 @@ interface RequestOptions {
   as?: string;
 }
 
-async function request<T>(
+/**
+ * Attempt + grading results (browser-workspace spec R5). Not in
+ * @sidequest/shared yet; the shared `attempt` schema would strip these keys.
+ * All optional/nullable so a freshly started attempt still validates.
+ */
+export const gradedAttempt = attempt.extend({
+  testsPassed: z.number().int().nonnegative().nullable().optional(),
+  testsFailed: z.number().int().nonnegative().nullable().optional(),
+  failures: z.array(z.object({ name: z.string(), message: z.string() })).nullable().optional(),
+  verdict: z.enum(["APPROVE", "REQUEST_CHANGES"]).nullable().optional(),
+  reviewBody: z.string().nullable().optional(),
+  reviewCommentUrl: z.string().nullable().optional(),
+});
+export type GradedAttempt = z.infer<typeof gradedAttempt>;
+
+export async function request<T>(
   method: string,
   path: string,
   schema: ZodType<T> | null,
@@ -107,10 +121,10 @@ export const api = {
   tickets: () => request<Ticket[]>("GET", "/tickets", ticketsEndpoints.listTicketsResponse),
   ticket: (id: string) => request<Ticket>("GET", `/tickets/${encodeURIComponent(id)}`, ticket),
 
-  startAttempt: (ticketId: string) => request<Attempt>("POST", "/attempts", attempt, { body: { ticketId } }),
-  attempt: (id: string) => request<Attempt>("GET", `/attempts/${encodeURIComponent(id)}`, attempt),
+  startAttempt: (ticketId: string) => request<GradedAttempt>("POST", "/attempts", gradedAttempt, { body: { ticketId } }),
+  attempt: (id: string) => request<GradedAttempt>("GET", `/attempts/${encodeURIComponent(id)}`, gradedAttempt),
   submitAttempt: (id: string, prUrl: string) =>
-    request<Attempt>("POST", `/attempts/${encodeURIComponent(id)}/submit`, attempt, { body: { prUrl } }),
+    request<GradedAttempt>("POST", `/attempts/${encodeURIComponent(id)}/submit`, gradedAttempt, { body: { prUrl } }),
 
   ask: (persona: "pm" | "coach", question: string, attemptId?: string) =>
     request<AskPersonaResponse>("POST", `/ai/${persona}`, aiEndpoints.askPersonaResponse, {

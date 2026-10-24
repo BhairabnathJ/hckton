@@ -26,7 +26,7 @@ Copy `.env.example` to `.env.local` to change settings:
 | `/` | Landing | — |
 | `/login` | Demo-user picker (MOCK) | `GET /users/me` |
 | `/home` | Tickets + XP | `GET /tickets` |
-| `/tickets/:id` | Problem workspace | `GET /tickets/{id}`, `POST /attempts`, `POST /attempts/{id}/submit`, `GET /attempts/{id}` (polled while grading), `POST /ai/pm`, `POST /ai/coach` |
+| `/tickets/:id` | In-browser editor (Monaco) + grading | `GET /tickets/{id}`, `POST /attempts`, `POST /attempts/{id}/workspace`, `GET`/`PUT /attempts/{id}/workspace/file`, `POST /attempts/{id}/workspace/run-tests`, `POST /attempts/{id}/workspace/submit`, `GET /attempts/{id}` (polled while grading), `POST /attempts/{id}/submit` (advanced PR path), `POST /ai/pm`, `POST /ai/coach` |
 | `/jobs` | Paid job board (live) | `GET /jobs`, `POST /jobs/{id}/claim`, `POST /admin/jobs/drop-demo` (company), `GET /events` |
 | `/jobs/:id` | Active job | `GET /jobs`, `POST /jobs/{id}/submit` |
 | `/level-up` | XP / level celebration | `GET /users/me` |
@@ -35,3 +35,13 @@ Copy `.env.example` to `.env.local` to change settings:
 
 The `X-Demo-User` header comes from the switcher in the app header (`src/lib/demoUser.tsx`).
 All requests go through `src/lib/api.ts`; errors decode the `{ error: { code, message } }` envelope.
+
+## Ticket workspace
+
+`src/pages/Workspace.tsx` is a VS Code-style editor: ticket on the left, file tree + Monaco
+(`src/components/workspace/CodeEditor.tsx`, lazy-loaded, bundled locally rather than from a CDN)
+in the centre with a test console below, and grading / AI review / PM + Coach chat on the right.
+Edits autosave after 1.5s idle; Cmd/Ctrl+S saves immediately; unsaved files are flushed before
+running tests or submitting. The workspace client and the extra Attempt fields
+(`testsPassed`, `failures`, `verdict`, `reviewBody`, …) are typed in `src/lib/workspace.ts` and
+`src/lib/api.ts` until they land in `@sidequest/shared`.
