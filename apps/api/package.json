@@ -4,14 +4,20 @@
   "private": true,
   "description": "SideQuest API — api-contract deliverables: OpenAPI 3 file + one-command mock server.",
   "type": "module",
+  "exports": {
+    "./llm": "./src/llm/index.ts"
+  },
   "scripts": {
     "openapi": "tsx src/mock/openapi.ts",
     "mock": "tsx src/mock/server.ts",
     "check": "tsx src/mock/check.ts",
     "smoke": "tsx src/mock/smoke.ts",
+    "llm:test": "tsx src/llm/test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "3.1156.0",
+    "@google/genai": "2.31.0",
     "@sidequest/shared": "*",
     "express": "4.22.3",
     "yaml": "2.9.1",

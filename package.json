@@ -5,7 +5,8 @@
   "description": "SideQuest monorepo root",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "grader"
   ],
   "scripts": {
     "mock": "npm run mock -w @sidequest/api"
