@@ -18,7 +18,8 @@ import type { Attempt as AttemptRow, User as UserRow } from "@prisma/client";
 import type { Attempt } from "@sidequest/shared";
 import { prisma } from "../../db.js";
 import { AppError } from "../../http/error.js";
-import { grade as runGrade } from "../grader/service.js";
+import { grade as runGrade, gradeWorkspace as runGradeWorkspace } from "../grader/service.js";
+import type { CoreGradeResult } from "../grader/types.js";
 import { awardForAttempt } from "../progression/service.js";
 import { publish } from "../events/service.js";
 import { record as recordTelemetry } from "../telemetry/service.js";
@@ -34,6 +35,14 @@ export function toContractAttempt(row: AttemptRow): Attempt {
     testRuns: row.testRuns,
     reviewRounds: row.reviewRounds,
     hintsUsed: row.hintsUsed,
+    testsPassed: row.testsPassed,
+    testsFailed: row.testsFailed,
+    failures: row.failuresJson
+      ? (JSON.parse(row.failuresJson) as Array<{ name: string; message: string }>)
+      : [],
+    verdict: (row.verdict as Attempt["verdict"]) ?? null,
+    reviewBody: row.reviewBody,
+    reviewCommentUrl: row.reviewCommentUrl,
   };
 }
 
@@ -93,10 +102,53 @@ export async function submit(id: string, prUrl: string): Promise<AttemptRow> {
     prUrl,
   });
 
+  return resolveGrade(grading, result);
+}
+
+/**
+ * POST /attempts/:id/workspace/submit — grade the in-browser workspace INLINE
+ * through the same verdict + XP machinery as the PR path. The workspace path is
+ * already created; grading copies it to a temp dir and injects hidden tests
+ * (never into the workspace itself).
+ */
+export async function submitWorkspace(
+  id: string,
+  workspacePath: string,
+  studentHandle: string,
+): Promise<AttemptRow> {
+  const existing = await getById(id);
+  if (existing.status === "passed") {
+    throw AppError.conflict(`Attempt "${id}" has already passed; it cannot be re-submitted.`);
+  }
+
+  const grading = await prisma.attempt.update({
+    where: { id },
+    data: { status: "grading", testRuns: { increment: 1 } },
+  });
+
+  const result = await runGradeWorkspace({
+    attemptId: grading.id,
+    ticketId: grading.ticketId,
+    workspacePath,
+    studentHandle,
+  });
+
+  return resolveGrade(grading, result);
+}
+
+/**
+ * Shared verdict/persistence path used by BOTH submit flows (PR + workspace).
+ *
+ * Verdict rule (unchanged): passed iff testsTotal > 0 && all tests pass &&
+ * advisoryPass. A runner error/timeout yields passed:false, so a failed run can
+ * only ever land in changes_requested. Persists the GradeRun, the Review, and
+ * the grade-detail fields, awards XP on a pass, publishes the event, and returns
+ * the resolved attempt row.
+ */
+async function resolveGrade(grading: AttemptRow, result: CoreGradeResult): Promise<AttemptRow> {
   const allTestsPass = result.testsTotal > 0 && result.testsPassed === result.testsTotal;
   const passed = allTestsPass && result.advisoryPass;
 
-  // Persist the GradeRun and the Review (advisory), then resolve.
   await prisma.gradeRun.create({
     data: {
       attemptId: grading.id,
@@ -108,9 +160,23 @@ export async function submit(id: string, prUrl: string): Promise<AttemptRow> {
   });
   await upsertReview(grading.id, result.verdict, result.advisoryPass, result.reviewCommentUrl);
 
+  // Grade-detail fields surfaced on the attempt (both paths, R5).
+  const detail = {
+    testsPassed: result.testsPassed,
+    testsFailed: result.testsFailed,
+    failuresJson: JSON.stringify(result.failures ?? []),
+    verdict: result.verdict,
+    reviewBody: result.reviewBody,
+    reviewCommentUrl: result.reviewCommentUrl,
+    prUrl: result.prUrl ?? grading.prUrl,
+  };
+
   let resolved: AttemptRow;
   if (passed) {
-    resolved = await prisma.attempt.update({ where: { id }, data: { status: "passed" } });
+    resolved = await prisma.attempt.update({
+      where: { id: grading.id },
+      data: { status: "passed", ...detail },
+    });
     const award = await awardForAttempt(resolved);
     publish({
       type: "attempt.passed",
@@ -125,8 +191,8 @@ export async function submit(id: string, prUrl: string): Promise<AttemptRow> {
     });
   } else {
     resolved = await prisma.attempt.update({
-      where: { id },
-      data: { status: "changes_requested", reviewRounds: { increment: 1 } },
+      where: { id: grading.id },
+      data: { status: "changes_requested", reviewRounds: { increment: 1 }, ...detail },
     });
     publish({
       type: "attempt.changes_requested",
