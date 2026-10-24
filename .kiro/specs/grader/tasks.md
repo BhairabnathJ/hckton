@@ -94,3 +94,22 @@ throwaway venv (subprocess) or `python:3.12-slim` (Docker, cuttable).
   orchestrator runs synchronously for the demo; the queue wraps it later.
 - All `*` test sub-tasks (runner contract test, unit tests) — Requirement
   verification is via the smoke script in this scope.
+
+## Smoke verification (2026-10-24)
+
+The REQUIRED smoke test (Task 8) was run end to end against a real PR and passed:
+
+- **PR:** `https://github.com/BhairabnathJ/brightline/pull/1` — a deliberately
+  wrong fix on `ticket/l1-pagination-wrongfix` (base `ticket/l1-pagination`):
+  `offset = (page - 1) * pageSize + 1` (off-by-one in the other direction).
+- **Runner:** `GRADER_RUNNER=subprocess` (default in this scope). **Reviewer:**
+  `LLM_PROVIDER=gemini`, `GEMINI_MODEL=gemini-3.8-flash` (live call).
+- **GradeResult:** `passed=false`, `testsPassed=9`, `testsFailed=1`,
+  `testsTotal=10`, `verdict=REQUEST_CHANGES`.
+- **Failing test:** `tests/test_pagination.py::test_pagination_covers_every_shipment_exactly_once`
+  (page-boundary continuity broken: 21 returned vs 22 total).
+- **Review comment (live Gemini):**
+  `https://github.com/BhairabnathJ/brightline/pull/1#issuecomment-6389233290` —
+  specific with `file:line` (cited `app/shipments.py:88`), did not write the fix,
+  and ended with exactly `REQUEST_CHANGES`.
+- **Cleanup:** temp clone + venv removed on completion.
