@@ -73,6 +73,13 @@ model Attempt {
   testRuns     Int      @default(0)
   reviewRounds Int      @default(0)
   hintsUsed    Int      @default(0)
+  // Grade detail filled when a submit resolves (PR-URL or browser-workspace).
+  testsPassed      Int?
+  testsFailed      Int?
+  failuresJson     String? // JSON array of { name, message }; bounded, sanitized
+  verdict          String? // "APPROVE" | "REQUEST_CHANGES"
+  reviewBody       String? // the AI review text
+  reviewCommentUrl String? // posted PR comment url, when one was posted
   startedAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
