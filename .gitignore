@@ -27,3 +27,6 @@ out/
 .idea/
 .vscode/
 *.swp
+
+# Sim-company repo (its own git repo; not tracked by the monorepo)
+/sim-companies/brightline/

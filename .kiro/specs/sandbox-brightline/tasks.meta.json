@@ -1,0 +1,393 @@
+{
+  "pbtResults": {
+    "8.2 Property 5 — fail-before / pass-after (REQUIRED, not cuttable) (7 min)": {
+      "status": "passed",
+      "lastRunTimestamp": 1792868834425
+    },
+    "8.1 Property 8 — hidden-test isolation / leak scan (REQUIRED, not cuttable) (7 min)": {
+      "status": "passed",
+      "lastRunTimestamp": 1792868836705
+    }
+  },
+  "executionHistory": {
+    "1. Freeze and COMMIT the contract: `tickets.json` schema + hidden-test folder layout (12 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201830
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867205722
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867285275
+      }
+    ],
+    "2.1 Create project skeleton and dependencies (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201831
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867287745
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867375293
+      }
+    ],
+    "2.2 Implement seed data (4 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201840
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867380377
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867479566
+      }
+    ],
+    "2.3 Implement `GET /shipments` pagination and route resource with ETA (8 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201842
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867482073
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867796414
+      }
+    ],
+    "3.1 Inject the four deliberate imperfections (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201844
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867800060
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867867053
+      }
+    ],
+    "3.2 Write the visible test suite incl. the strictly-slowest annotated test (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201845
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867870736
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868024799
+      }
+    ],
+    "3.3 Write CONTRIBUTING.md (4 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201846
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867871528
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868025725
+      }
+    ],
+    "4.1 Branch `ticket/l1-pagination` — inject off-by-one pagination bug (5 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201847
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868108263
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868277701
+      }
+    ],
+    "4.2 Branch `ticket/l2-eta-timezone` — inject timezone ETA bug (5 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201849
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868111155
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868279171
+      }
+    ],
+    "4.3 Branch `ticket/l3-route-eta` — feature absent (4 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201850
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868112135
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868279869
+      }
+    ],
+    "5. Checkpoint — visible suite green on main and all three branches (3 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201852
+      }
+    ],
+    "6.1 L1 hidden test + reference solution (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201853
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868285538
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868460544
+      }
+    ],
+    "6.2 L2 hidden test + reference solution (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201854
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868286487
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868461452
+      }
+    ],
+    "6.3 L3 hidden test + reference solution (8 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201855
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868287472
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868462386
+      }
+    ],
+    "7.1 Manifest loading + schema validation (6 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201856
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868467061
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868714434
+      }
+    ],
+    "7.2 Layout resolution (4 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201857
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868469978
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868715827
+      }
+    ],
+    "7.3 Isolation leak scan (4 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201859
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868470922
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868716782
+      }
+    ],
+    "7.4 Fail-before / pass-after per-ticket runner + aggregation (8 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201860
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868471899
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868717666
+      }
+    ],
+    "10. Final smoke test — run the verifier and show all three tickets pass (9 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867201861
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868858600
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868905962
+      }
+    ],
+    "2. Scaffold the Brightline FastAPI app on `main` with seed data (18 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792867796416
+      }
+    ],
+    "3. Add deliberate imperfections, visible tests, and CONTRIBUTING.md on `main` (16 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868025726
+      }
+    ],
+    "4. Create the three ticket branches derived from `main` (14 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868279871
+      }
+    ],
+    "6. Write hidden tests and reference solutions per ticket in `brightline-hidden` (20 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868462388
+      }
+    ],
+    "7. Implement `scripts/verify_tickets.py` (22 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868717668
+      }
+    ],
+    "8.1 Property 8 — hidden-test isolation / leak scan (REQUIRED, not cuttable) (7 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868732985
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868853683
+      }
+    ],
+    "8.2 Property 5 — fail-before / pass-after (REQUIRED, not cuttable) (7 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868733914
+      },
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868854798
+      }
+    ],
+    "8. REQUIRED property tests (14 min)": [
+      {
+        "executionId": "e7361092-be6f-4793-8c98-4d47d943da37",
+        "chatSessionId": "sess_52e70148-c77a-46f0-a46b-804623052d0d",
+        "timestamp": 1792868853685
+      }
+    ]
+  }
+}

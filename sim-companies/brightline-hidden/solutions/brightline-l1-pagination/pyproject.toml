@@ -1,0 +1,23 @@
+[project]
+# Reference solution for ticket brightline-l1-pagination.
+#
+# This directory holds the CORRECT Brightline `app` package: GET /shipments
+# computes offset = (page - 1) * pageSize, so paging partitions the shipment
+# set with no row skipped or duplicated at page boundaries. It is the
+# pass-after target for tests/brightline-l1-pagination/test_pagination.py.
+#
+# SERVER-ONLY: never shipped to students; the public `brightline` repo must
+# not contain this solution on any branch.
+name = "brightline-l1-pagination-solution"
+version = "0.1.0"
+description = "Reference solution (correct pagination) for L1 off-by-one ticket."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "SQLAlchemy",
+    "httpx",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
