@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* SideQuest light theme — same tokens as the Claude Design "Tokens & components" board. */
+@theme {
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-surface: #ffffff;
+  --color-tint: #f4f8ff;
+  --color-tint-2: #eaf2ff;
+  --color-overlay: #e3ecfa;
+  --color-code: #f7faff;
+  --color-line: #dce5f2;
+  --color-line-2: #c7d4e8;
+
+  --color-ink: #0f172a;
+  --color-ink-2: #475569;
+  --color-ink-3: #5a6a80;
+
+  --color-xp: #2563eb;
+  --color-xp-text: #1d4ed8;
+  --color-xp-soft: #eaf2ff;
+  --color-xp-line: #bcd2fa;
+
+  --color-cash: #047857;
+  --color-cash-bright: #10b981;
+  --color-cash-soft: #e6f6ef;
+  --color-cash-line: #9fddc4;
+
+  --color-pass: #16a34a;
+  --color-pass-text: #15803d;
+  --color-pass-soft: #e9f7ee;
+  --color-warn: #ea580c;
+  --color-warn-text: #c2410c;
+  --color-warn-soft: #fff1e7;
+  --color-err: #dc2626;
+  --color-err-text: #b91c1c;
+  --color-err-soft: #fef0f0;
+  --color-claim: #7c3aed;
+  --color-claim-text: #6d28d9;
+  --color-claim-soft: #f2edff;
+  --color-off: #94a3b8;
+  --color-off-text: #64748b;
+  --color-off-soft: #f1f5f9;
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px -12px rgba(37, 99, 235, 0.18);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-tint font-sans text-[14px] leading-normal text-ink;
+  }
+  a {
+    @apply text-xp-text;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-xp;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@keyframes sq-confetti {
+  0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+}
+@keyframes sq-pop {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  100% { opacity: 1; transform: none; }
+}
+.sq-pop {
+  animation: sq-pop 0.2s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sq-pop, .sq-confetti { animation: none !important; }
+}

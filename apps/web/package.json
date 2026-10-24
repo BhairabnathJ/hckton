@@ -1,0 +1,29 @@
+{
+  "name": "@sidequest/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SideQuest web UI (React + Vite + Tailwind), built against the api-contract.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sidequest/shared": "*",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.11",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "tailwindcss": "4.1.11",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}
