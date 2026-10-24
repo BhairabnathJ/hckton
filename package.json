@@ -1,0 +1,13 @@
+{
+  "name": "sidequest",
+  "private": true,
+  "version": "0.0.0",
+  "description": "SideQuest monorepo root",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "mock": "npm run mock -w @sidequest/api"
+  }
+}
