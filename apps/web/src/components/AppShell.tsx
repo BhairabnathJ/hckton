@@ -1,6 +1,7 @@
-import { NavLink, Link, Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
+import { NavLink, Link, Navigate, Outlet } from "react-router-dom";
 import { useDemoUser } from "../lib/demoUser";
-import { LEVEL_GATE } from "../lib/format";
+import { LEVEL_GATE, isCompany } from "../lib/format";
 import { DemoUserSwitcher } from "./DemoUserSwitcher";
 import { ErrorState, cx } from "./ui";
 
@@ -23,9 +24,17 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-xp-soft text-xp-text" : "text-ink-2 hover:bg-tint hover:text-ink",
   );
 
+/** Company-only routes: students are sent to the job board. */
+export function RequireCompany({ children }: { children: ReactNode }) {
+  const { me, loading } = useDemoUser();
+  if (!me) return loading ? null : <Navigate to="/login" replace />;
+  return isCompany(me) ? <>{children}</> : <Navigate to="/jobs" replace />;
+}
+
 export function AppShell() {
   const { me, error, loading } = useDemoUser();
   const paid = (me?.level ?? 0) >= LEVEL_GATE;
+  const company = isCompany(me);
 
   return (
     <div className="min-h-screen">
@@ -33,13 +42,19 @@ export function AppShell() {
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6">
           <Logo />
           <nav aria-label="Primary" className="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto">
-            <NavLink to="/home" className={navClass}>
-              Home
-            </NavLink>
+            {company ? (
+              <NavLink to="/company" className={navClass}>
+                Company
+              </NavLink>
+            ) : (
+              <NavLink to="/home" className={navClass}>
+                Home
+              </NavLink>
+            )}
             <NavLink to="/jobs" className={navClass}>
               <span className="inline-flex items-center gap-1.5">
                 Paid jobs
-                {!paid && (
+                {!paid && !company && (
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-label="locked">
                     <rect x="4" y="11" width="16" height="10" rx="2" />
                     <path d="M8 11V7a4 4 0 0 1 8 0v4" />
@@ -47,15 +62,14 @@ export function AppShell() {
                 )}
               </span>
             </NavLink>
-            <NavLink to="/profile" className={navClass}>
-              Profile
-            </NavLink>
-            <NavLink to="/company" className={navClass}>
-              Company
-            </NavLink>
+            {!company && (
+              <NavLink to="/profile" className={navClass}>
+                Profile
+              </NavLink>
+            )}
           </nav>
           <div className="ml-auto flex items-center gap-2.5">
-            {me && (
+            {me && !company && (
               <span className="hidden rounded-full bg-xp-soft px-2.5 py-1 font-mono text-[12.5px] font-semibold text-xp-text md:inline">
                 {me.xp.toLocaleString()} XP
               </span>

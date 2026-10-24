@@ -27,11 +27,11 @@ Copy `.env.example` to `.env.local` to change settings:
 | `/login` | Demo-user picker (MOCK) | `GET /users/me` |
 | `/home` | Tickets + XP | `GET /tickets` |
 | `/tickets/:id` | Problem workspace | `GET /tickets/{id}`, `POST /attempts`, `POST /attempts/{id}/submit`, `GET /attempts/{id}` (polled while grading), `POST /ai/pm`, `POST /ai/coach` |
-| `/jobs` | Paid job board (live) | `GET /jobs`, `POST /jobs/{id}/claim`, `POST /admin/jobs/drop`, `GET /events` |
+| `/jobs` | Paid job board (live) | `GET /jobs`, `POST /jobs/{id}/claim`, `POST /admin/jobs/drop-demo` (company), `GET /events` |
 | `/jobs/:id` | Active job | `GET /jobs`, `POST /jobs/{id}/submit` |
 | `/level-up` | XP / level celebration | `GET /users/me` |
 | `/profile`, `/users/:id` | Profile + telemetry opt-in | `GET /users/me`, `GET /users/{id}`, `PATCH /users/me` |
-| `/company` | Post jobs, accept submissions | `POST /jobs`, `POST /jobs/{id}/accept` |
+| `/company` | Post jobs, accept submissions (company role only) | `GET /jobs`, `POST /jobs`, `POST /jobs/{id}/accept`, `GET /events` |
 
 The `X-Demo-User` header comes from the switcher in the app header (`src/lib/demoUser.tsx`).
 All requests go through `src/lib/api.ts`; errors decode the `{ error: { code, message } }` envelope.

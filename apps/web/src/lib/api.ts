@@ -124,8 +124,8 @@ export const api = {
     request<Job>("POST", `/jobs/${encodeURIComponent(id)}/submit`, job, { body: { prUrl } }),
   acceptJob: (id: string) => request<Job>("POST", `/jobs/${encodeURIComponent(id)}/accept`, job),
 
-  // DEMO ONLY
-  dropDemoJob: () => request<Job>("POST", "/admin/jobs/drop", adminEndpoints.dropDemoJobResponse),
+  // DEMO ONLY, company role
+  dropDemoJob: () => request<Job>("POST", "/admin/jobs/drop-demo", adminEndpoints.dropDemoJobResponse),
   reloadTickets: () =>
     request<ReloadTicketsResponse>("POST", "/admin/tickets/reload", adminEndpoints.reloadTicketsResponse),
 };
@@ -136,6 +136,10 @@ export function describeError(err: unknown): string {
   switch (err.code) {
     case "job_already_claimed":
       return "Someone claimed this job first. Keep an eye out for the next drop.";
+    case "forbidden":
+      return "Only the company account can do that.";
+    case "conflict":
+      return err.message || "That job isn't in the right state for this action.";
     case "level_gate":
       return "Paid jobs unlock at Level 6. Keep solving tickets to get there.";
     case "validation_error":

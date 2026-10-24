@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { AppShell } from "./components/AppShell";
+import { AppShell, RequireCompany } from "./components/AppShell";
 import { Card, EmptyState, LinkButton } from "./components/ui";
 import { ActiveJob } from "./pages/ActiveJob";
 import { Company } from "./pages/Company";
@@ -42,7 +42,14 @@ export function App() {
         <Route path="/level-up" element={<LevelUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/users/:id" element={<Profile />} />
-        <Route path="/company" element={<Company />} />
+        <Route
+          path="/company"
+          element={
+            <RequireCompany>
+              <Company />
+            </RequireCompany>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

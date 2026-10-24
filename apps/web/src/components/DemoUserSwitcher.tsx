@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDemoUser } from "../lib/demoUser";
-import { LEVEL_GATE } from "../lib/format";
+import { homePath, isCompany } from "../lib/format";
 import { Avatar, MockTag, cx } from "./ui";
 
 /** // MOCK: header control that picks the X-Demo-User handle. */
@@ -36,7 +36,7 @@ export function DemoUserSwitcher() {
         onClick={() => setOpen((o) => !o)}
         className="flex min-h-10 items-center gap-2 rounded-xl border border-line bg-surface py-1 pr-2.5 pl-1 text-ink hover:bg-tint"
       >
-        {me ? <Avatar name={me.name} level={me.level} size={32} /> : <span className="size-8 rounded-full bg-overlay" />}
+        {me ? <Avatar name={me.name} level={isCompany(me) ? undefined : me.level} size={32} /> : <span className="size-8 rounded-full bg-overlay" />}
         <span className="hidden text-[13px] font-medium sm:inline">{me ? me.name.split(" ")[0] : "No user"}</span>
         <MockTag>DEMO</MockTag>
       </button>
@@ -68,18 +68,18 @@ export function DemoUserSwitcher() {
                 onClick={() => {
                   setHandle(u.handle);
                   setOpen(false);
-                  navigate(u.handle === "admin" ? "/company" : u.level >= LEVEL_GATE ? "/jobs" : "/home");
+                  navigate(homePath(u));
                 }}
                 className={cx(
                   "mt-1 flex w-full items-center gap-3 rounded-xl border p-3 text-left",
                   on ? "border-xp bg-xp-soft" : "border-line bg-surface hover:bg-tint",
                 )}
               >
-                <Avatar name={u.name} level={u.level} size={38} />
+                <Avatar name={u.name} level={isCompany(u) ? undefined : u.level} size={38} />
                 <span className="min-w-0 flex-1 leading-tight">
                   <span className="block font-semibold">{u.name}</span>
                   <span className="block truncate text-[12.5px] text-ink-2">
-                    Level {u.level} · {u.school} · {u.xp.toLocaleString()} XP
+                    {isCompany(u) ? "Company account" : `Level ${u.level} · ${u.school} · ${u.xp.toLocaleString()} XP`}
                   </span>
                 </span>
                 <span className="font-mono text-[11px] text-ink-3">{u.handle}</span>

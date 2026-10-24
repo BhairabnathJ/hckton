@@ -6,7 +6,7 @@ import { Button, Card, EmptyState, ErrorState, LinkButton, MockTag, Skeleton, To
 import { ApiError, api, describeError } from "../lib/api";
 import { useDemoUser } from "../lib/demoUser";
 import { useJobEvents } from "../lib/events";
-import { LEVEL_GATE, dollars } from "../lib/format";
+import { LEVEL_GATE, dollars, isCompany, visibleJobs } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 
 type Filter = "all" | "open" | "mine";
@@ -35,7 +35,8 @@ export function JobBoard() {
   });
 
   if (!me) return null;
-  const gated = me.level < LEVEL_GATE;
+  const company = isCompany(me);
+  const gated = !company && me.level < LEVEL_GATE;
 
   const claim = async (job: Job) => {
     setClaiming(job.id);
@@ -64,7 +65,7 @@ export function JobBoard() {
     }
   };
 
-  const list = (jobs.data ?? []).filter((j) =>
+  const list = visibleJobs(jobs.data ?? [], me).filter((j) =>
     filter === "open" ? j.status === "open" : filter === "mine" ? j.claimedByUserId === me.id : true,
   );
   const sorted = [...list].sort((a, b) => Number(b.id === fresh) - Number(a.id === fresh) || Number(b.status === "open") - Number(a.status === "open"));
@@ -100,6 +101,7 @@ export function JobBoard() {
               {label}
             </button>
           ))}
+          {company && (
           <button
             type="button"
             onClick={drop}
@@ -108,6 +110,7 @@ export function JobBoard() {
           >
             {dropping ? "Dropping…" : "DEMO · drop a job"}
           </button>
+          )}
         </div>
       </div>
 
@@ -147,7 +150,7 @@ export function JobBoard() {
           const mine = j.claimedByUserId === me.id;
           return (
             <JobCard key={j.id} job={j} fresh={j.id === fresh}>
-              {j.status === "open" && (
+              {j.status === "open" && !company && (
                 <Button
                   variant="money"
                   size="lg"

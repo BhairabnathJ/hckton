@@ -4,8 +4,8 @@ import { EscrowBadge } from "../components/JobCard";
 import { Button, Card, EmptyState, ErrorState, LinkButton, Pill, SectionLabel, Skeleton, cx } from "../components/ui";
 import { api } from "../lib/api";
 import { useDemoUser } from "../lib/demoUser";
-import { useJobEvents } from "../lib/events";
-import { PR_URL, countdown, dollars, jobStatusView } from "../lib/format";
+import { useJobEvents, usePolling } from "../lib/events";
+import { PR_URL, countdown, dollars, jobStatusView, visibleJobs } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 
 const ORDER = ["claimed", "submitted", "accepted", "paid"] as const;
@@ -15,7 +15,7 @@ export function ActiveJob() {
   const { me, handle } = useDemoUser();
   // The contract has no GET /jobs/{id}; read the list and pick this job.
   const jobs = useAsync(() => api.jobs(), [handle]);
-  const job = jobs.data?.find((j) => j.id === id);
+  const job = visibleJobs(jobs.data ?? [], me).find((j) => j.id === id);
   const [now, setNow] = useState(() => Date.now());
   const [prUrl, setPrUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -29,6 +29,8 @@ export function ActiveJob() {
   useJobEvents((ev) => {
     if (ev.job.id === id) jobs.setData((list = []) => list.map((j) => (j.id === id ? ev.job : j)));
   });
+  // Acceptance isn't streamed over SSE; poll while waiting on the company.
+  usePolling(jobs.reload, 5000, job?.status === "submitted");
 
   if (jobs.loading && !jobs.data) {
     return (

@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "../components/AppShell";
 import { Avatar, Card, ErrorState, MockTag, Skeleton } from "../components/ui";
 import { useDemoUser } from "../lib/demoUser";
-import { LEVEL_GATE } from "../lib/format";
+import { homePath, isCompany } from "../lib/format";
 
 /** // MOCK: login is a demo-user picker that sets X-Demo-User. */
 export function Login() {
@@ -41,15 +41,15 @@ export function Login() {
                 type="button"
                 onClick={() => {
                   setHandle(u.handle);
-                  navigate(u.handle === "admin" ? "/company" : u.level >= LEVEL_GATE ? "/jobs" : "/home");
+                  navigate(homePath(u));
                 }}
                 className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 hover:border-xp hover:bg-xp-soft"
               >
-                <Avatar name={u.name} level={u.level} size={40} />
+                <Avatar name={u.name} level={isCompany(u) ? undefined : u.level} size={40} />
                 <span className="min-w-0 flex-1 leading-tight">
                   <span className="block font-semibold">{u.name}</span>
                   <span className="block truncate text-[12.5px] text-ink-2">
-                    Level {u.level} · {u.school}
+                    {isCompany(u) ? "Company account" : `Level ${u.level} · ${u.school}`}
                   </span>
                 </span>
                 <span className="font-mono text-[11px] text-ink-3">{u.handle}</span>

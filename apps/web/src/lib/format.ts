@@ -1,4 +1,20 @@
-import type { AttemptStatus, JobStatus } from "@sidequest/shared";
+import type { AttemptStatus, Job, JobStatus, User } from "@sidequest/shared";
+
+/** // MOCK auth role: company accounts post and accept jobs; students claim them. */
+export function isCompany(user: User | null | undefined): boolean {
+  return user?.role === "company";
+}
+
+/** Students see open jobs plus jobs they claimed; companies see everything. */
+export function visibleJobs(jobs: Job[], user: User | null | undefined): Job[] {
+  if (isCompany(user)) return jobs;
+  return jobs.filter((j) => j.status === "open" || (!!user && j.claimedByUserId === user.id));
+}
+
+/** Where a user lands after picking them in the demo switcher. */
+export function homePath(user: User): string {
+  return isCompany(user) ? "/company" : user.level >= LEVEL_GATE ? "/jobs" : "/home";
+}
 
 /** Level 6 unlocks the paid job board (architecture: level gate). */
 export const LEVEL_GATE = 6;

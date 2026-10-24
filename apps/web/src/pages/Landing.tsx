@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Logo } from "../components/AppShell";
 import { Card, LinkButton } from "../components/ui";
+import { useDemoUser } from "../lib/demoUser";
+import { isCompany } from "../lib/format";
 
 const steps = [
   { n: "1", title: "Pick a ticket", body: "Real bugs in a simulated company codebase, starting at Level 1." },
@@ -10,6 +12,7 @@ const steps = [
 ];
 
 export function Landing() {
+  const company = isCompany(useDemoUser().me);
   return (
     <div className="min-h-screen bg-[radial-gradient(1100px_620px_at_50%_-10%,#dbe8ff,transparent_70%)]">
       <header className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4 sm:px-6">
@@ -18,9 +21,11 @@ export function Landing() {
           <a href="#how" className="hidden rounded-control px-3 py-2 text-ink-2 no-underline hover:bg-surface sm:inline">
             How it works
           </a>
-          <Link to="/company" className="hidden rounded-control px-3 py-2 text-ink-2 no-underline hover:bg-surface sm:inline">
-            For companies
-          </Link>
+          {company && (
+            <Link to="/company" className="hidden rounded-control px-3 py-2 text-ink-2 no-underline hover:bg-surface sm:inline">
+              Company dashboard
+            </Link>
+          )}
           <LinkButton to="/login" size="sm">
             Log in
           </LinkButton>
@@ -42,9 +47,11 @@ export function Landing() {
           <LinkButton to="/login" size="lg">
             Start at Level 1
           </LinkButton>
-          <LinkButton to="/company" variant="secondary" size="lg">
-            Post a paid job
-          </LinkButton>
+          {company && (
+            <LinkButton to="/company" variant="secondary" size="lg">
+              Post a paid job
+            </LinkButton>
+          )}
         </div>
       </section>
 

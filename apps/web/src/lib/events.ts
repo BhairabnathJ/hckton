@@ -2,7 +2,21 @@ import { useEffect, useRef } from "react";
 import { sseEvent, type SseEvent } from "@sidequest/shared";
 import { API_URL } from "./api";
 
-const NAMED = ["job.dropped", "job.claimed", "job.claim_expired"] as const;
+/**
+ * Re-run `refresh` every `ms` while `enabled`. The API only streams
+ * job.dropped / job.claimed, so submit and accept transitions are polled.
+ */
+export function usePolling(refresh: () => unknown, ms: number, enabled = true): void {
+  const fn = useRef(refresh);
+  fn.current = refresh;
+  useEffect(() => {
+    if (!enabled) return;
+    const t = setInterval(() => fn.current(), ms);
+    return () => clearInterval(t);
+  }, [ms, enabled]);
+}
+
+const NAMED =["job.dropped", "job.claimed", "job.claim_expired"] as const;
 
 /**
  * Subscribe to GET /events (Server-Sent Events). Only contract events

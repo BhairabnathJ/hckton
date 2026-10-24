@@ -4,7 +4,7 @@ import { JobCard } from "../components/JobCard";
 import { Button, Card, EmptyState, ErrorState, MockTag, Skeleton, Toast } from "../components/ui";
 import { api, describeError } from "../lib/api";
 import { useDemoUser } from "../lib/demoUser";
-import { useJobEvents } from "../lib/events";
+import { useJobEvents, usePolling } from "../lib/events";
 import { LEVEL_GATE, dollars } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 
@@ -24,6 +24,8 @@ export function Company() {
   const upsert = (job: Job) =>
     jobs.setData((list = []) => (list.some((j) => j.id === job.id) ? list.map((j) => (j.id === job.id ? job : j)) : [job, ...list]));
   useJobEvents((ev) => upsert(ev.job));
+  // Submissions aren't streamed over SSE; poll so new PRs show up to accept.
+  usePolling(jobs.reload, 8000);
 
   const posted = (jobs.data ?? []).filter((j) => j.companyId === companyId);
 
