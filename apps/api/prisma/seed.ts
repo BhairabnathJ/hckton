@@ -100,8 +100,41 @@ async function main(): Promise<void> {
   // Tickets from the server-only hidden manifest (Brightline SimCompany).
   const { count } = await reloadTickets();
 
+  // Marketplace: one Company + two open jobs (minLevel 6) so a Level 6 user
+  // (Jordan) can claim a live job in the demo. Reset for determinism.
+  await prisma.job.deleteMany();
+  await prisma.company.deleteMany();
+  const company = await prisma.company.create({
+    data: { id: "company_northwind", name: "Northwind Logistics", size: "51-200" },
+  });
+  await prisma.job.create({
+    data: {
+      companyId: company.id,
+      title: "Harden the shipments pagination endpoint",
+      description: "Production pagination drops rows under load; make it correct and covered.",
+      payCents: 9000, // $90
+      timeLimitHours: 6,
+      minLevel: 6,
+      status: "open",
+      escrowStatus: "funded", // // MOCK
+    },
+  });
+  await prisma.job.create({
+    data: {
+      companyId: company.id,
+      title: "Add route ETA caching",
+      description: "Add a short-lived cache in front of the ETA computation.",
+      payCents: 12000, // $120
+      timeLimitHours: 8,
+      minLevel: 6,
+      status: "open",
+      escrowStatus: "funded", // // MOCK
+    },
+  });
+
   const users = await prisma.user.count();
-  console.log(`Seed complete: ${users} users, ${count} tickets, 2 personas.`);
+  const jobs = await prisma.job.count();
+  console.log(`Seed complete: ${users} users, ${count} tickets, 2 personas, 1 company, ${jobs} jobs.`);
 }
 
 main()

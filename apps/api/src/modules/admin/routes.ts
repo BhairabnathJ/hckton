@@ -12,6 +12,7 @@ import { asyncHandler } from "../../http/validate.js";
 import { AppError } from "../../http/error.js";
 import { requireUser } from "../users/middleware.js";
 import { reloadTickets } from "../tickets/loader.js";
+import { dropDemoJob, toContractJob } from "../marketplace/service.js";
 
 /** The seeded company-admin demo handle (// MOCK auth). */
 export const ADMIN_HANDLE = "admin";
@@ -33,5 +34,19 @@ adminRouter.post(
         total: result.total,
       }),
     );
+  }),
+);
+
+// POST /admin/jobs/drop-demo — demo-only: drop a fresh open job and publish
+// `job.dropped` over SSE (marketplace requirement M1).
+adminRouter.post(
+  "/jobs/drop-demo",
+  asyncHandler(async (req, res) => {
+    const me = requireUser(req);
+    if (me.handle !== ADMIN_HANDLE) {
+      throw AppError.unauthorized("Only the company-admin demo user may drop a demo job.");
+    }
+    const job = await dropDemoJob();
+    res.status(201).json(adminEndpoints.dropDemoJobResponse.parse(toContractJob(job)));
   }),
 );

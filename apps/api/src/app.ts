@@ -16,6 +16,7 @@ import { attemptsRouter } from "./modules/attempts/routes.js";
 import { aiRouter } from "./modules/ai-personas/routes.js";
 import { eventsRouter } from "./modules/events/routes.js";
 import { adminRouter } from "./modules/admin/routes.js";
+import { jobsRouter } from "./modules/marketplace/routes.js";
 
 export function createApp(): Express {
   const app = express();
@@ -32,6 +33,7 @@ export function createApp(): Express {
   app.use("/tickets", currentUser, ticketsRouter);
   app.use("/attempts", currentUser, attemptsRouter);
   app.use("/ai", currentUser, aiRouter);
+  app.use("/jobs", currentUser, jobsRouter);
   app.use("/admin", currentUser, adminRouter);
 
   // Canonical error envelope — mounted last.

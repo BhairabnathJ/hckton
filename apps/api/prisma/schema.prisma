@@ -1,12 +1,12 @@
-// SideQuest core-api data model (build-plan spec #4).
+// SideQuest core-api data model (build-plan spec #4) + marketplace (spec #5).
 //
-// Mirrors /docs/architecture.md §3 for the entities core-api owns. SQLite today
-// (Postgres-compatible for a later migration): enums and JSON are stored as
-// String and validated at the edge by the shared zod enums, so the service code
-// round-trips through the contract and the Postgres swap changes no service.
+// Mirrors /docs/architecture.md §3. SQLite today (Postgres-compatible for a
+// later migration): enums and JSON are stored as String and validated at the
+// edge by the shared zod enums, so the service code round-trips through the
+// contract and the Postgres swap changes no service.
 //
-// Company / Job / Submission from §3 are intentionally NOT modeled here — they
-// belong to the downstream `marketplace` spec. Adding them later is additive.
+// Marketplace adds `Company` and `Job` (minimal scope: no `Submission` entity;
+// the submitted PR url and claim/escrow state live as fields on `Job`).
 
 generator client {
   provider = "prisma-client-js"
@@ -130,4 +130,39 @@ model TelemetryEvent {
   name      String // event type
   propsJson String // bounded, anonymized, no PII (§6)
   createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// marketplace (build-plan spec #5) — Company + Job.
+//
+// Per the reconciled architecture §3/§5. No `Submission` entity is modeled
+// (minimal marketplace scope): the submitted PR url lives on the Job via
+// `prUrl`, and claim/escrow state live on the Job (`claimedByUserId`,
+// `claimExpiresAt`, `escrowStatus`) — no separate Claim/EscrowTransaction.
+// ---------------------------------------------------------------------------
+
+model Company {
+  id   String @id @default(cuid())
+  name String
+  size String
+
+  jobs Job[]
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id])
+  title           String
+  description     String
+  payCents        Int
+  timeLimitHours  Int
+  minLevel        Int       @default(6)
+  status          String    @default("open") // Job state machine (§5)
+  claimedByUserId String? // the claimant (no separate Claim entity)
+  claimExpiresAt  DateTime?
+  prUrl           String? // submitted PR (no separate Submission entity)
+  escrowStatus    String    @default("funded") // // MOCK: funded|released|refunded (§7)
+  droppedAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
