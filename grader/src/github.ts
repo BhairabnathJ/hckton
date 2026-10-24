@@ -88,6 +88,69 @@ export class GitHub {
     }
   }
 
+  /**
+   * Commit the current working-tree changes in `workspacePath` onto a fresh
+   * branch and push it to origin. The token is injected only into the push URL
+   * (never logged) and the token-bearing remote is removed afterwards.
+   */
+  async pushWorkspaceBranch(
+    workspacePath: string,
+    branch: string,
+    owner: string,
+    repo: string,
+    commitMessage: string,
+  ): Promise<void> {
+    const pushUrl = `https://x-access-token:${this.token}@github.com/${owner}/${repo}.git`;
+    // Create (or reset to) the branch, stage everything, commit, and push.
+    await this.git(["-C", workspacePath, "checkout", "-B", branch]);
+    await this.git(["-C", workspacePath, "add", "-A"]);
+    // Commit may be empty if nothing changed; tolerate that so grading proceeds.
+    await this.git(["-C", workspacePath, "commit", "-m", commitMessage]).catch(() => {});
+    await this.git(["-C", workspacePath, "push", "-f", pushUrl, `HEAD:${branch}`], {
+      redact: pushUrl,
+    });
+  }
+
+  /**
+   * Open a PR (or reuse an existing open one) from `head` into `base`.
+   * Returns the PR html_url and number.
+   */
+  async openPr(opts: {
+    owner: string;
+    repo: string;
+    head: string;
+    base: string;
+    title: string;
+    body?: string;
+  }): Promise<{ number: number; htmlUrl: string }> {
+    try {
+      const res = await this.octokit.pulls.create({
+        owner: opts.owner,
+        repo: opts.repo,
+        head: opts.head,
+        base: opts.base,
+        title: opts.title,
+        body: opts.body ?? "",
+      });
+      return { number: res.data.number, htmlUrl: res.data.html_url };
+    } catch (err) {
+      // A PR for this head may already exist — reuse the open one.
+      const existing = await this.octokit.pulls
+        .list({ owner: opts.owner, repo: opts.repo, state: "open", head: `${opts.owner}:${opts.head}` })
+        .catch(() => null);
+      const pr = existing?.data?.[0];
+      if (pr) return { number: pr.number, htmlUrl: pr.html_url };
+      throw new Error(`Could not open PR ${opts.head} -> ${opts.base}: ${this.safe(err)}`);
+    }
+  }
+
+  /** The repo URL's owner/repo, parsed from an https origin like the demo repo. */
+  static parseRepoUrl(url: string): { owner: string; repo: string } {
+    const m = url.match(/github\.com[/:]([^/]+)\/([^/.]+)(?:\.git)?/);
+    if (!m) throw new Error(`Not a parseable GitHub repo URL: ${url}`);
+    return { owner: m[1]!, repo: m[2]! };
+  }
+
   /** Redact the token from any error text. */
   private safe(err: unknown): string {
     const msg = err instanceof Error ? err.message : String(err);

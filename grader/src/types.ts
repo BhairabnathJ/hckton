@@ -41,6 +41,10 @@ export interface GradeResult {
   logExcerpt: string;
   verdict: Verdict;
   reviewCommentUrl: string | null;
+  /** The AI review text (body). Present for both PR and workspace grading. */
+  reviewBody?: string;
+  /** The opened/submitted PR url, when one exists. */
+  prUrl?: string | null;
 }
 
 /**

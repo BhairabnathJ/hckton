@@ -33,21 +33,29 @@ export class GraderModuleRunner implements GraderRunner {
   async grade(req: CoreGradeRequest): Promise<CoreGradeResult> {
     // Dynamic import so the DemoRunner path never loads the grader's GitHub/
     // octokit dependencies. Relative path to the committed /grader module.
+    if (!req.prUrl) {
+      throw new Error("GraderModuleRunner.grade requires a prUrl (PR submit path).");
+    }
+    const prUrl = req.prUrl;
     const grader = await import("../../../../../grader/src/index.js");
     const result = await grader.grade({
       attemptId: req.attemptId,
       ticketId: req.ticketId,
-      prUrl: req.prUrl,
+      prUrl,
     });
 
     return {
       passed: result.passed,
       testsPassed: result.testsPassed,
       testsTotal: result.testsTotal,
+      testsFailed: result.testsFailed,
+      failures: (result.failures ?? []).map((f) => ({ name: f.test, message: f.message })),
       advisoryPass: result.verdict === "APPROVE",
       verdict: result.verdict,
+      reviewBody: result.reviewBody ?? "",
       logExcerpt: clip(result.logExcerpt),
       reviewCommentUrl: result.reviewCommentUrl,
+      prUrl: result.prUrl ?? prUrl,
     };
   }
 }
@@ -68,20 +76,28 @@ export class DemoRunner implements GraderRunner {
         passed: true,
         testsPassed: 2,
         testsTotal: 2,
+        testsFailed: 0,
+        failures: [],
         advisoryPass: true,
         verdict: "APPROVE",
+        reviewBody: "[demo runner] Looks correct. Pagination boundaries covered. APPROVE",
         logExcerpt: "[demo runner] All hidden tests passed (deterministic demo result).",
         reviewCommentUrl: null,
+        prUrl: req.prUrl ?? null,
       };
     }
     return {
       passed: false,
       testsPassed: 0,
       testsTotal: 1,
+      testsFailed: 1,
+      failures: [{ name: "demo", message: "No deterministic result for this ticket." }],
       advisoryPass: false,
       verdict: "REQUEST_CHANGES",
+      reviewBody: "[demo runner] No deterministic result for this ticket. REQUEST_CHANGES",
       logExcerpt: "[demo runner] No deterministic result for this ticket; request changes.",
       reviewCommentUrl: null,
+      prUrl: req.prUrl ?? null,
     };
   }
 }

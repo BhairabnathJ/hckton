@@ -11,7 +11,7 @@
 export interface CoreGradeRequest {
   attemptId: string;
   ticketId: string;
-  prUrl: string;
+  prUrl?: string;
 }
 
 /** The normalized grade outcome the `attempts` module persists. */
@@ -20,14 +20,30 @@ export interface CoreGradeResult {
   passed: boolean;
   testsPassed: number;
   testsTotal: number;
+  /** Failed-test count (testsTotal - testsPassed under the invariant). */
+  testsFailed: number;
+  /** Failing tests surfaced to the student (bounded; never hidden source). */
+  failures: Array<{ name: string; message: string }>;
   /** Review advisory: the AI reviewer said APPROVE. */
   advisoryPass: boolean;
   /** Raw verdict string for the Review summary ("APPROVE" | "REQUEST_CHANGES"). */
   verdict: string;
+  /** The AI review text (body). */
+  reviewBody: string;
   /** Bounded, sanitized log excerpt (never hidden-test source). */
   logExcerpt: string;
   /** The posted PR review comment URL, when the runner posted one. */
   reviewCommentUrl: string | null;
+  /** The PR url associated with this grade (PR path: the submitted PR; workspace: the opened PR). */
+  prUrl: string | null;
+}
+
+/** What `attempts` passes to the workspace grading seam. */
+export interface CoreWorkspaceGradeRequest {
+  attemptId: string;
+  ticketId: string;
+  workspacePath: string;
+  studentHandle: string;
 }
 
 /** The seam a runner implements. */

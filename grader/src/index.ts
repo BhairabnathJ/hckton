@@ -7,7 +7,7 @@
  * PR, and return a GradeResult. No DB access (architecture §2).
  */
 export * from "./types.js";
-export { grade } from "./grade.js";
+export { grade, gradeWorkspace, type WorkspaceGradeRequest } from "./grade.js";
 export { createSandboxRunner } from "./runners/index.js";
 export { loadTicket, copyHiddenTests, type Ticket } from "./tickets.js";
 export { review, parseVerdict } from "./reviewer.js";
