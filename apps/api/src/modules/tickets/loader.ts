@@ -40,7 +40,12 @@ export function readTicketManifest(): HiddenTicketDef[] {
 }
 
 /** Ensure the Brightline SimCompany exists, then upsert every ticket def. */
-export async function reloadTickets(): Promise<{ simCompanyId: string; count: number }> {
+export async function reloadTickets(): Promise<{
+  simCompanyId: string;
+  count: number;
+  added: number;
+  total: number;
+}> {
   await prisma.simCompany.upsert({
     where: { id: BRIGHTLINE_SIMCOMPANY.id },
     create: BRIGHTLINE_SIMCOMPANY,
@@ -48,6 +53,7 @@ export async function reloadTickets(): Promise<{ simCompanyId: string; count: nu
   });
 
   const defs = readTicketManifest();
+  let added = 0;
   for (const def of defs) {
     const data = {
       simCompanyId: BRIGHTLINE_SIMCOMPANY.id,
@@ -61,11 +67,16 @@ export async function reloadTickets(): Promise<{ simCompanyId: string; count: nu
       xpReward: def.xpReward,
       hiddenTestRef: def.hiddenTestPath, // SERVER-ONLY (§6)
     };
+    // Track newly-created tickets (ids not seen before) so the reload endpoint
+    // can report `added` vs `total` per the shared contract.
+    const existing = await prisma.ticket.findUnique({ where: { id: def.id } });
+    if (!existing) added++;
     await prisma.ticket.upsert({
       where: { id: def.id },
       create: { id: def.id, ...data },
       update: data,
     });
   }
-  return { simCompanyId: BRIGHTLINE_SIMCOMPANY.id, count: defs.length };
+  const total = await prisma.ticket.count();
+  return { simCompanyId: BRIGHTLINE_SIMCOMPANY.id, count: defs.length, added, total };
 }

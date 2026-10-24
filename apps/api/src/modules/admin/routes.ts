@@ -7,6 +7,7 @@
  * handle — any other current user is rejected with `unauthorized`.
  */
 import { Router } from "express";
+import { adminEndpoints } from "@sidequest/shared";
 import { asyncHandler } from "../../http/validate.js";
 import { AppError } from "../../http/error.js";
 import { requireUser } from "../users/middleware.js";
@@ -26,6 +27,11 @@ adminRouter.post(
       throw AppError.unauthorized("Only the company-admin demo user may reload tickets.");
     }
     const result = await reloadTickets();
-    res.json({ reloaded: result.count, simCompanyId: result.simCompanyId });
+    res.json(
+      adminEndpoints.reloadTicketsResponse.parse({
+        added: result.added,
+        total: result.total,
+      }),
+    );
   }),
 );
