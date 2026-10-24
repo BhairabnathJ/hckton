@@ -1,0 +1,133 @@
+// SideQuest core-api data model (build-plan spec #4).
+//
+// Mirrors /docs/architecture.md §3 for the entities core-api owns. SQLite today
+// (Postgres-compatible for a later migration): enums and JSON are stored as
+// String and validated at the edge by the shared zod enums, so the service code
+// round-trips through the contract and the Postgres swap changes no service.
+//
+// Company / Job / Submission from §3 are intentionally NOT modeled here — they
+// belong to the downstream `marketplace` spec. Adding them later is additive.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  handle         String   @unique // resolved from X-Demo-User (// MOCK)
+  name           String
+  school         String
+  xp             Int      @default(0)
+  level          Int      @default(1)
+  rating         Float    @default(0)
+  workAuthorized Boolean  @default(false)
+  telemetryOptIn Boolean  @default(false) // opt-in OFF by default (§6)
+  createdAt      DateTime @default(now())
+
+  attempts        Attempt[]
+  telemetryEvents TelemetryEvent[]
+}
+
+model SimCompany {
+  id              String   @id @default(cuid())
+  name            String
+  repoTemplateUrl String
+  createdAt       DateTime @default(now())
+
+  tickets Ticket[]
+}
+
+model Ticket {
+  id                 String     @id // e.g. "brightline-l1-pagination"
+  simCompanyId       String
+  simCompany         SimCompany @relation(fields: [simCompanyId], references: [id])
+  repo               String
+  level              Int
+  title              String
+  description        String
+  acceptanceCriteria String // JSON array (string[]) serialized
+  branch             String
+  difficulty         String
+  xpReward           Int
+  hiddenTestRef      String // SERVER-ONLY: never serialized to a client (§6)
+  createdAt          DateTime   @default(now())
+
+  attempts Attempt[]
+}
+
+model Attempt {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  ticketId     String
+  ticket       Ticket   @relation(fields: [ticketId], references: [id])
+  branch       String?
+  prUrl        String?
+  status       String   @default("in_progress") // Attempt state machine (§5)
+  testRuns     Int      @default(0)
+  reviewRounds Int      @default(0)
+  hintsUsed    Int      @default(0)
+  startedAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  gradeRuns GradeRun[]
+  review    Review?
+  hintLogs  HintLog[]
+}
+
+model GradeRun {
+  id          String   @id @default(cuid())
+  attemptId   String
+  attempt     Attempt  @relation(fields: [attemptId], references: [id])
+  passed      Boolean
+  testsPassed Int
+  testsTotal  Int
+  logExcerpt  String // bounded, sanitized (never hidden-test source) (§6)
+  durationMs  Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model Persona {
+  id           String  @id // "pm" | "coach"
+  name         String
+  voice        String
+  systemPrompt String
+
+  reviews Review[]
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  attemptId    String   @unique // Attempt 1:1 (optional) Review
+  attempt      Attempt  @relation(fields: [attemptId], references: [id])
+  personaId    String
+  persona      Persona  @relation(fields: [personaId], references: [id])
+  summary      String
+  commentsJson String
+  advisoryPass Boolean
+  createdAt    DateTime @default(now())
+}
+
+model HintLog {
+  id        String   @id @default(cuid())
+  attemptId String
+  attempt   Attempt  @relation(fields: [attemptId], references: [id])
+  persona   String // "pm" | "coach"
+  question  String
+  response  String
+  createdAt DateTime @default(now())
+}
+
+model TelemetryEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String // event type
+  propsJson String // bounded, anonymized, no PII (§6)
+  createdAt DateTime @default(now())
+}

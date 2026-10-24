@@ -31,3 +31,8 @@ out/
 
 # Sim-company repo (its own git repo; not tracked by the monorepo)
 /sim-companies/brightline/
+
+# Prisma / SQLite local database
+*.db
+*.db-journal
+apps/api/prisma/dev.db*
