@@ -40,6 +40,36 @@ export async function list(): Promise<JobRow[]> {
   return prisma.job.findMany({ orderBy: { droppedAt: "desc" } });
 }
 
+/**
+ * POST /jobs — post a new job (company-only; authorized at the route).
+ *
+ * The job starts `open` with escrow `funded` (// MOCK), ready to be claimed.
+ */
+export async function post(input: {
+  companyId: string;
+  title: string;
+  description: string;
+  payCents: number;
+  timeLimitHours: number;
+  minLevel: number;
+}): Promise<JobRow> {
+  const company = await prisma.company.findUnique({ where: { id: input.companyId } });
+  if (!company) throw AppError.notFound(`Company "${input.companyId}" not found.`);
+
+  return prisma.job.create({
+    data: {
+      companyId: input.companyId,
+      title: input.title,
+      description: input.description,
+      payCents: input.payCents,
+      timeLimitHours: input.timeLimitHours,
+      minLevel: input.minLevel,
+      status: "open",
+      escrowStatus: "funded", // // MOCK
+    },
+  });
+}
+
 export async function getById(id: string): Promise<JobRow> {
   const row = await prisma.job.findUnique({ where: { id } });
   if (!row) throw AppError.notFound(`Job "${id}" not found.`);

@@ -38,6 +38,7 @@ export function buildSeed(): SeedData {
       rating: 4.2,
       workAuthorized: true,
       telemetryOptIn: false,
+      role: "student",
     },
     {
       id: "user_grace",
@@ -49,6 +50,7 @@ export function buildSeed(): SeedData {
       rating: 4.9,
       workAuthorized: true,
       telemetryOptIn: true,
+      role: "student",
     },
   ];
 

@@ -58,8 +58,9 @@ async function main(): Promise<void> {
       rating: 0,
       workAuthorized: false,
       telemetryOptIn: false,
+      role: "student",
     },
-    update: { name: "Maya Chen", school: "UMass Amherst", xp: 0, level: 1 },
+    update: { name: "Maya Chen", school: "UMass Amherst", xp: 0, level: 1, role: "student" },
   });
   await prisma.user.upsert({
     where: { handle: "jordan" },
@@ -72,6 +73,7 @@ async function main(): Promise<void> {
       rating: 4.8,
       workAuthorized: true,
       telemetryOptIn: false,
+      role: "student",
     },
     update: {
       name: "Jordan Okafor",
@@ -80,6 +82,7 @@ async function main(): Promise<void> {
       level: 6,
       rating: 4.8,
       workAuthorized: true,
+      role: "student",
     },
   });
   await prisma.user.upsert({
@@ -93,8 +96,9 @@ async function main(): Promise<void> {
       rating: 0,
       workAuthorized: true,
       telemetryOptIn: false,
+      role: "company",
     },
-    update: { name: "SideQuest Admin" },
+    update: { name: "SideQuest Admin", role: "company" },
   });
 
   // Tickets from the server-only hidden manifest (Brightline SimCompany).

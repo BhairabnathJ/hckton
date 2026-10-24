@@ -22,6 +22,7 @@ export function toContractUser(row: UserRow): User {
     rating: row.rating,
     workAuthorized: row.workAuthorized,
     telemetryOptIn: row.telemetryOptIn,
+    role: row.role as User["role"],
   };
 }
 

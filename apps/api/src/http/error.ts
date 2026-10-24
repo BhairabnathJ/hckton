@@ -29,6 +29,9 @@ export class AppError extends Error {
   static levelGate(message = "Level requirement not met"): AppError {
     return new AppError("level_gate", 403, message);
   }
+  static forbidden(message = "Forbidden"): AppError {
+    return new AppError("forbidden", 403, message);
+  }
   static conflict(message = "Conflict"): AppError {
     return new AppError("conflict", 409, message);
   }

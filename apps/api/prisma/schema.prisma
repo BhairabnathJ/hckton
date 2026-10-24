@@ -27,6 +27,7 @@ model User {
   rating         Float    @default(0)
   workAuthorized Boolean  @default(false)
   telemetryOptIn Boolean  @default(false) // opt-in OFF by default (§6)
+  role           String   @default("student") // "student" | "company" (// MOCK auth)
   createdAt      DateTime @default(now())
 
   attempts        Attempt[]

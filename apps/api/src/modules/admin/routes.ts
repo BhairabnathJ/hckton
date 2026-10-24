@@ -9,8 +9,7 @@
 import { Router } from "express";
 import { adminEndpoints } from "@sidequest/shared";
 import { asyncHandler } from "../../http/validate.js";
-import { AppError } from "../../http/error.js";
-import { requireUser } from "../users/middleware.js";
+import { requireCompany } from "../users/middleware.js";
 import { reloadTickets } from "../tickets/loader.js";
 import { dropDemoJob, toContractJob } from "../marketplace/service.js";
 
@@ -23,10 +22,7 @@ export const adminRouter: Router = Router();
 adminRouter.post(
   "/tickets/reload",
   asyncHandler(async (req, res) => {
-    const me = requireUser(req);
-    if (me.handle !== ADMIN_HANDLE) {
-      throw AppError.unauthorized("Only the company-admin demo user may reload tickets.");
-    }
+    requireCompany(req); // company-only; 403 forbidden otherwise
     const result = await reloadTickets();
     res.json(
       adminEndpoints.reloadTicketsResponse.parse({
@@ -38,14 +34,11 @@ adminRouter.post(
 );
 
 // POST /admin/jobs/drop-demo — demo-only: drop a fresh open job and publish
-// `job.dropped` over SSE (marketplace requirement M1).
+// `job.dropped` over SSE (marketplace requirement M1). Company-only.
 adminRouter.post(
   "/jobs/drop-demo",
   asyncHandler(async (req, res) => {
-    const me = requireUser(req);
-    if (me.handle !== ADMIN_HANDLE) {
-      throw AppError.unauthorized("Only the company-admin demo user may drop a demo job.");
-    }
+    requireCompany(req); // company-only; 403 forbidden otherwise
     const job = await dropDemoJob();
     res.status(201).json(adminEndpoints.dropDemoJobResponse.parse(toContractJob(job)));
   }),

@@ -38,3 +38,19 @@ export function requireUser(req: Request): UserRow {
   if (!req.currentUser) throw AppError.unauthorized("No current user resolved.");
   return req.currentUser;
 }
+
+/**
+ * Authorize the current user as the `company` (admin) account.
+ *
+ * // MOCK auth: the seeded company demo user carries `role: "company"` (the
+ * admin handle). Only that user may post jobs, accept submissions, or drop demo
+ * jobs; everyone else gets 403 `forbidden`. Production replacement is a real
+ * role/authorization check behind this same seam (§7).
+ */
+export function requireCompany(req: Request): UserRow {
+  const me = requireUser(req);
+  if (me.role !== "company") {
+    throw AppError.forbidden("Only the company account may perform this action.");
+  }
+  return me;
+}

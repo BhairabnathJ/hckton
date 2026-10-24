@@ -43,11 +43,22 @@ export const escrowStatus = z.enum(["funded", "released", "refunded"]);
 /** AI hint persona a student can ask (conflict C5: named persona instances). */
 export const hintPersona = z.enum(["pm", "coach"]);
 
+/**
+ * Demo user role (// MOCK auth).
+ *
+ * `student` users complete tickets and (at Level 6) claim marketplace jobs.
+ * `company` users (the admin demo handle) own the company surface: posting
+ * jobs, accepting submissions, and dropping demo jobs. Production replacement
+ * (architecture §7) is a real auth/role system behind the same seam.
+ */
+export const userRole = z.enum(["student", "company"]);
+
 /** Stable, machine-readable error codes used in the canonical error envelope. */
 export const errorCode = z.enum([
   "validation_error",
   "not_found",
   "level_gate",
+  "forbidden",
   "job_already_claimed",
   "unauthorized",
   "conflict",
@@ -58,4 +69,5 @@ export type AttemptStatus = z.infer<typeof attemptStatus>;
 export type JobStatus = z.infer<typeof jobStatus>;
 export type EscrowStatus = z.infer<typeof escrowStatus>;
 export type HintPersona = z.infer<typeof hintPersona>;
+export type UserRole = z.infer<typeof userRole>;
 export type ErrorCode = z.infer<typeof errorCode>;

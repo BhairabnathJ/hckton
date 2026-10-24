@@ -325,6 +325,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Caller is not the company account (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
       security: *a2
   /jobs/{id}/claim:
     post:
@@ -415,6 +421,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Job"
+        "403":
+          description: Caller is not the company account (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
         "404":
           description: Job not found
           content:
@@ -428,11 +440,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
       security: *a2
-  /admin/jobs/drop:
+  /admin/jobs/drop-demo:
     post:
       tags:
         - admin
-      summary: "DEMO ONLY: drop a demo job and emit job.dropped on /events"
+      summary: "COMPANY ONLY: drop a demo job and emit job.dropped on /events"
+      description: "Creates a fresh demo Job (status open, escrow funded) and
+        publishes `job.dropped` on the /events SSE stream. Company-only:
+        authorized via the MOCK X-Demo-User auth seam by `role: company` (the
+        admin demo handle); any other user is rejected with 403 forbidden
+        (architecture §7)."
+      parameters:
+        - *a1
       responses:
         "201":
           description: The dropped job (status open)
@@ -440,17 +459,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Job"
-      security: []
+        "401":
+          description: No resolvable current user (unauthorized)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Caller is not the company account (forbidden)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+      security: *a2
   /admin/tickets/reload:
     post:
       tags:
         - admin
-      summary: "ADMIN ONLY: re-read the ticket definitions and upsert new tickets"
+      summary: "COMPANY ONLY: re-read the ticket definitions and upsert new tickets"
       description: "Re-reads /sim-companies/brightline-hidden/tickets.json and
-        upserts any new tickets into the store without a restart. Admin-only:
-        resolved via the MOCK X-Demo-User auth seam, which must be `admin`
-        (architecture §7). The response carries only counts and never exposes
-        ticket bodies or any hidden-test reference (architecture §6)."
+        upserts any new tickets into the store without a restart. Company-only:
+        authorized via the MOCK X-Demo-User auth seam by `role: company` (the
+        admin demo handle; architecture §7). The response carries only counts
+        and never exposes ticket bodies or any hidden-test reference
+        (architecture §6)."
       parameters:
         - *a1
       responses:
@@ -467,7 +499,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
         "403":
-          description: Caller is not the admin demo user (level_gate)
+          description: Caller is not the company account (forbidden)
           content:
             application/json:
               schema:
@@ -508,6 +540,7 @@ components:
                 - validation_error
                 - not_found
                 - level_gate
+                - forbidden
                 - job_already_claimed
                 - unauthorized
                 - conflict
@@ -548,6 +581,11 @@ components:
           type: boolean
         telemetryOptIn:
           type: boolean
+        role:
+          type: string
+          enum:
+            - student
+            - company
       required:
         - id
         - handle
@@ -558,6 +596,7 @@ components:
         - rating
         - workAuthorized
         - telemetryOptIn
+        - role
       additionalProperties: false
     Company:
       type: object

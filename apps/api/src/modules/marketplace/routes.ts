@@ -9,7 +9,7 @@
 import { Router } from "express";
 import { jobsEndpoints } from "@sidequest/shared";
 import { asyncHandler, parseOrThrow } from "../../http/validate.js";
-import { requireUser } from "../users/middleware.js";
+import { requireUser, requireCompany } from "../users/middleware.js";
 import * as marketplace from "./service.js";
 
 export const jobsRouter: Router = Router();
@@ -20,6 +20,17 @@ jobsRouter.get(
   asyncHandler(async (_req, res) => {
     const jobs = await marketplace.list();
     res.json(jobsEndpoints.listJobsResponse.parse(jobs.map(marketplace.toContractJob)));
+  }),
+);
+
+// POST /jobs — post a job. Company-only (403 forbidden otherwise).
+jobsRouter.post(
+  "/",
+  asyncHandler(async (req, res) => {
+    requireCompany(req);
+    const body = parseOrThrow(jobsEndpoints.postJobRequest, req.body);
+    const job = await marketplace.post(body);
+    res.status(201).json(jobsEndpoints.postJobResponse.parse(marketplace.toContractJob(job)));
   }),
 );
 
@@ -44,11 +55,11 @@ jobsRouter.post(
   }),
 );
 
-// POST /jobs/:id/accept — accept; // MOCK escrow release + payout.
+// POST /jobs/:id/accept — accept; // MOCK escrow release + payout. Company-only.
 jobsRouter.post(
   "/:id/accept",
   asyncHandler(async (req, res) => {
-    requireUser(req);
+    requireCompany(req);
     const accepted = await marketplace.accept(req.params.id);
     res.json(jobsEndpoints.acceptJobResponse.parse(marketplace.toContractJob(accepted)));
   }),
