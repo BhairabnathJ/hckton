@@ -17,6 +17,7 @@ import { aiRouter } from "./modules/ai-personas/routes.js";
 import { eventsRouter } from "./modules/events/routes.js";
 import { adminRouter } from "./modules/admin/routes.js";
 import { jobsRouter } from "./modules/marketplace/routes.js";
+import { workspaceRouter } from "./modules/workspace/routes.js";
 
 export function createApp(): Express {
   const app = express();
@@ -31,6 +32,10 @@ export function createApp(): Express {
   // Authed feature routers (current user resolved from X-Demo-User, // MOCK).
   app.use("/users", currentUser, usersRouter);
   app.use("/tickets", currentUser, ticketsRouter);
+  // Workspace routes are mounted BEFORE the attempts router. They live under a
+  // deeper path (/attempts/:id/workspace*) so they never shadow — and are never
+  // shadowed by — the existing attempts routes (PR-URL submit flow intact).
+  app.use("/attempts/:id/workspace", currentUser, workspaceRouter);
   app.use("/attempts", currentUser, attemptsRouter);
   app.use("/ai", currentUser, aiRouter);
   app.use("/jobs", currentUser, jobsRouter);
